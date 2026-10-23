@@ -1,7 +1,6 @@
 {
-  "buildCommand": "echo 'Frontend only'",
+  "buildCommand": "",
   "outputDirectory": ".",
-  "routes": [
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
+  "framework": "static",
+  "public": true
 }

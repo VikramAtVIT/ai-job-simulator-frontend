@@ -1,0 +1,284 @@
+<div id="achievementsPage" class="achievements-page">
+    <div class="header">
+        <h1>Achievements 🏆</h1>
+        <div class="header-right">
+            <div class="notification-bell" onclick="showNotifications()">🔔</div>
+        </div>
+    </div>
+
+    <div class="achievements-container">
+        <div class="achievements-header">
+            <div class="achievement-count">
+                <div class="count-number">5/12</div>
+                <div class="count-label">Achievements Unlocked</div>
+            </div>
+            <div class="achievement-progress">
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" style="width: 42%"></div>
+                </div>
+                <span>42% Complete</span>
+            </div>
+        </div>
+
+        <div class="achievements-grid">
+            <div class="achievement-card unlocked">
+                <div class="achievement-badge">🏅</div>
+                <div class="achievement-info">
+                    <h3>First Step</h3>
+                    <p>Complete your first scenario</p>
+                </div>
+                <div class="achievement-date">Unlocked Dec 15, 2024</div>
+            </div>
+
+            <div class="achievement-card unlocked">
+                <div class="achievement-badge">🚀</div>
+                <div class="achievement-info">
+                    <h3>Getting Started</h3>
+                    <p>Score 80%+ on any scenario</p>
+                </div>
+                <div class="achievement-date">Unlocked Dec 16, 2024</div>
+            </div>
+
+            <div class="achievement-card unlocked">
+                <div class="achievement-badge">⭐</div>
+                <div class="achievement-info">
+                    <h3>Rising Star</h3>
+                    <p>Complete 5 scenarios</p>
+                </div>
+                <div class="achievement-date">Unlocked Dec 18, 2024</div>
+            </div>
+
+            <div class="achievement-card unlocked">
+                <div class="achievement-badge">💪</div>
+                <div class="achievement-info">
+                    <h3>Dedication</h3>
+                    <p>Practice 10 scenarios in a week</p>
+                </div>
+                <div class="achievement-date">Unlocked Dec 20, 2024</div>
+            </div>
+
+            <div class="achievement-card unlocked">
+                <div class="achievement-badge">📈</div>
+                <div class="achievement-info">
+                    <h3>Consistent Improver</h3>
+                    <p>Improve score by 10% over 3 attempts</p>
+                </div>
+                <div class="achievement-date">Unlocked Dec 22, 2024</div>
+            </div>
+
+            <div class="achievement-card locked">
+                <div class="achievement-badge">💎</div>
+                <div class="achievement-info">
+                    <h3>Master</h3>
+                    <p>Complete all scenarios</p>
+                </div>
+                <div class="achievement-progress-small">
+                    <div class="progress-bar-outer">
+                        <div class="progress-bar-inner" style="width: 75%"></div>
+                    </div>
+                    <span>9/12</span>
+                </div>
+            </div>
+
+            <div class="achievement-card locked">
+                <div class="achievement-badge">🎯</div>
+                <div class="achievement-info">
+                    <h3>Perfect Score</h3>
+                    <p>Achieve 100% on any scenario</p>
+                </div>
+                <div class="achievement-progress-small">
+                    <span>0/1</span>
+                </div>
+            </div>
+
+            <div class="achievement-card locked">
+                <div class="achievement-badge">🔥</div>
+                <div class="achievement-info">
+                    <h3>On Fire</h3>
+                    <p>Score 85%+ on 10 consecutive attempts</p>
+                </div>
+                <div class="achievement-progress-small">
+                    <span>5/10</span>
+                </div>
+            </div>
+
+            <div class="achievement-card locked">
+                <div class="achievement-badge">👑</div>
+                <div class="achievement-info">
+                    <h3>Champion</h3>
+                    <p>Average score above 90%</p>
+                </div>
+                <div class="achievement-progress-small">
+                    <span>82% avg</span>
+                </div>
+            </div>
+
+            <div class="achievement-card locked">
+                <div class="achievement-badge">⚡</div>
+                <div class="achievement-info">
+                    <h3>Speedrunner</h3>
+                    <p>Complete a scenario in under 5 minutes</p>
+                </div>
+                <div class="achievement-progress-small">
+                    <span>Not started</span>
+                </div>
+            </div>
+
+            <div class="achievement-card locked">
+                <div class="achievement-badge">🌟</div>
+                <div class="achievement-info">
+                    <h3>Legendary</h3>
+                    <p>Unlock all achievements</p>
+                </div>
+                <div class="achievement-progress-small">
+                    <span>5/12</span>
+                </div>
+            </div>
+
+            <div class="achievement-card locked">
+                <div class="achievement-badge">🎓</div>
+                <div class="achievement-info">
+                    <h3>Scholar</h3>
+                    <p>Complete 50 practice attempts</p>
+                </div>
+                <div class="achievement-progress-small">
+                    <span>34/50</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .achievements-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+
+        .achievements-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .achievement-count {
+            text-align: center;
+        }
+
+        .count-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .count-label {
+            font-size: 13px;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .achievement-progress {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 200px;
+        }
+
+        .progress-bar-outer {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            transition: width 0.3s ease;
+        }
+
+        .achievement-progress span {
+            font-size: 12px;
+            color: #999;
+            font-weight: 600;
+            min-width: 60px;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .achievement-card {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-card.unlocked {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: var(--primary);
+        }
+
+        .achievement-card.unlocked:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.2);
+        }
+
+        .achievement-card.locked {
+            opacity: 0.6;
+            background: #f0f0f0;
+        }
+
+        .achievement-badge {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .achievement-info h3 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+
+        .achievement-info p {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 12px;
+        }
+
+        .achievement-date {
+            font-size: 11px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .achievement-progress-small {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .achievement-progress-small .progress-bar-outer {
+            height: 6px;
+        }
+
+        .achievement-progress-small span {
+            font-size: 11px;
+            color: #999;
+        }
+    </style>
+</div>

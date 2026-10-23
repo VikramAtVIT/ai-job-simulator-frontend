@@ -1,0 +1,161 @@
+<div id="dashboardPage" class="dashboard-page">
+    <div class="header">
+        <h1>Dashboard</h1>
+        <div class="header-right">
+            <div class="notification-bell" onclick="showNotifications()">🔔</div>
+            <button class="profile-btn" onclick="toggleProfileMenu()">👤 Profile</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Scenarios Completed</div>
+            <div class="stat-value" id="completedCount">12</div>
+            <div class="stat-change">+2 this week</div>
+        </div>
+        <div class="stat-card secondary">
+            <div class="stat-label">Average Score</div>
+            <div class="stat-value" id="avgScore">82%</div>
+            <div class="stat-change">↑ 5% improvement</div>
+        </div>
+        <div class="stat-card accent">
+            <div class="stat-label">Current Level</div>
+            <div class="stat-value" id="currentLevel">Pro</div>
+            <div class="stat-change">Intermediate</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Attempts</div>
+            <div class="stat-value" id="totalAttempts">34</div>
+            <div class="stat-change">6 this session</div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <div class="chat-section">
+            <div class="chat-header">
+                <span>AI Interview Coach<span class="chat-status"></span></span>
+                <span id="scenarioLabel">Ready for practice</span>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="message-bubble">
+                        👋 Hello! I'm your AI Interview Coach. Select a scenario to get started and let's practice your interview skills together!
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()">🎤</button>
+                <input 
+                    type="text" 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Type your response or use voice..." 
+                    onkeypress="handleChatKeypress(event)"
+                >
+                <button class="chat-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+        <div>
+            <div class="scenarios-section">
+                <div class="section-title">Practice Scenarios</div>
+                
+                <div class="scenario-item" onclick="selectScenario('manager_review')">
+                    <div class="scenario-name">
+                        <span>Manager Review</span>
+                        <span class="scenario-level">Easy</span>
+                    </div>
+                    <div class="scenario-progress">
+                        <div class="scenario-progress-bar" style="width: 60%"></div>
+                    </div>
+                </div>
+
+                <div class="scenario-item" onclick="selectScenario('client_requirement')">
+                    <div class="scenario-name">
+                        <span>Client Requirement</span>
+                        <span class="scenario-level">Medium</span>
+                    </div>
+                    <div class="scenario-progress">
+                        <div class="scenario-progress-bar" style="width: 40%"></div>
+                    </div>
+                </div>
+
+                <div class="scenario-item" onclick="selectScenario('production_incident')">
+                    <div class="scenario-name">
+                        <span>Production Incident</span>
+                        <span class="scenario-level">Hard</span>
+                    </div>
+                    <div class="scenario-progress">
+                        <div class="scenario-progress-bar" style="width: 20%"></div>
+                    </div>
+                </div>
+
+                <div class="scenario-item" onclick="selectScenario('difficult_colleague')">
+                    <div class="scenario-name">
+                        <span>Difficult Colleague</span>
+                        <span class="scenario-level">Hard</span>
+                    </div>
+                    <div class="scenario-progress">
+                        <div class="scenario-progress-bar" style="width: 10%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="achievements-section">
+                <div class="section-title">Achievements</div>
+                
+                <div class="achievement-item">
+                    <div class="achievement-badge">🏅</div>
+                    <div class="achievement-name">First Step</div>
+                    <div class="achievement-desc">Complete 1 scenario</div>
+                </div>
+
+                <div class="achievement-item">
+                    <div class="achievement-badge">🚀</div>
+                    <div class="achievement-name">Getting Started</div>
+                    <div class="achievement-desc">Score 80%+</div>
+                </div>
+
+                <div class="achievement-item achievement-locked">
+                    <div class="achievement-badge">💎</div>
+                    <div class="achievement-name">Master</div>
+                    <div class="achievement-desc">Complete all scenarios</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feedback-section">
+        <div class="section-title">Latest Feedback</div>
+        <div class="score-circle">
+            <div class="score-number" id="feedbackScore">--</div>
+        </div>
+        
+        <div class="rubric-item">
+            <span class="rubric-label">Communication</span>
+            <span class="rubric-score" id="rubricComm">--/25</span>
+        </div>
+        <div class="rubric-item">
+            <span class="rubric-label">Problem Solving</span>
+            <span class="rubric-score" id="rubricProblem">--/25</span>
+        </div>
+        <div class="rubric-item">
+            <span class="rubric-label">Professionalism</span>
+            <span class="rubric-score" id="rubricProf">--/25</span>
+        </div>
+        <div class="rubric-item">
+            <span class="rubric-label">Adaptability</span>
+            <span class="rubric-score" id="rubricAdapt">--/25</span>
+        </div>
+
+        <div class="feedback-text" id="feedbackText">
+            No feedback yet. Complete a scenario to get personalized feedback.
+        </div>
+
+        <button class="chat-btn" onclick="generateFeedback()" style="width: 100%; margin-top: 15px;">
+            Generate Feedback
+        </button>
+    </div>
+</div>

@@ -1,0 +1,9 @@
+{
+  "name": "ai-job-simulator-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'No build needed'",
+    "dev": "echo 'Run locally with a simple server'"
+  }
+}

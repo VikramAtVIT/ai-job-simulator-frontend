@@ -71,9 +71,9 @@ function applyPreferences() {
       card.classList.toggle('locked-scenario', !unlocked);
     }
   });
-  const recommendationsContainer = document.querySelector('.recommendations-container');
-  if (recommendationsContainer) {
-    recommendationsContainer.hidden = !preferences.recommendations;
+  const recommendationsSection = document.getElementById('recommendationsSection');
+  if (recommendationsSection) {
+    recommendationsSection.hidden = !preferences.recommendations;
   }
   const lightModeToggle = document.getElementById('lightModeToggle');
   const hardScenariosToggle = document.getElementById('hardScenariosToggle');
@@ -110,40 +110,17 @@ const scenarioLabels = {
 };
 
 function renderReactRecommendation(recommendation) {
-  const rootElement = document.getElementById('recommendations-list');
+  const rootElement = document.getElementById('react-coaching-panel');
   if (!rootElement || !window.React || !window.ReactDOM || !getPreferences().recommendations) return;
   const recommendationElement = React.createElement(
     'div',
-    { className: 'react-recommendation recommendation-card' },
+    { className: 'react-recommendation' },
     React.createElement('span', { className: 'eyebrow' }, 'Live coaching'),
     React.createElement('strong', null, 'Skill-gap recommendation'),
     React.createElement('p', null, recommendation)
   );
   if (!rootElement._reactRoot) rootElement._reactRoot = ReactDOM.createRoot(rootElement);
   rootElement._reactRoot.render(recommendationElement);
-}
-
-function saveRecommendation(recommendation) {
-  localStorage.setItem('latestRecommendation', JSON.stringify({
-    recommendation,
-    scenario: currentScenario,
-    createdAt: new Date().toISOString()
-  }));
-}
-
-function renderSavedRecommendation() {
-  if (!getPreferences().recommendations) return;
-  const saved = localStorage.getItem('latestRecommendation');
-  if (!saved) return;
-  try {
-    const data = JSON.parse(saved);
-    if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
-      renderReactRecommendation(data.recommendation.trim());
-    }
-  } catch (error) {
-    localStorage.removeItem('latestRecommendation');
-    console.error('Unable to load saved recommendation:', error);
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -171,15 +148,21 @@ function setupSocketListeners() {
     currentScenario = data.type;
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) chatMessages.innerHTML = '';
+    const recommendationPanel = document.getElementById('react-coaching-panel');
+    if (recommendationPanel) {
+      if (recommendationPanel._reactRoot) {
+        recommendationPanel._reactRoot.unmount();
+        delete recommendationPanel._reactRoot;
+      }
+      recommendationPanel.innerHTML = '<div class="recommendation-empty">Complete a response to receive a focused skill-gap recommendation.</div>';
+    }
     appendMessage(data.intro, 'bot');
   });
   window.socket.on('aiResponse', data => {
     const message = typeof data.message === 'string' ? data.message.trim() : '';
     if (message) appendMessage(message, 'bot');
     if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
-      const recommendation = data.recommendation.trim();
-      saveRecommendation(recommendation);
-      renderReactRecommendation(recommendation);
+      renderReactRecommendation(data.recommendation.trim());
     }
   });
   window.socket.on('voiceAnalysis', data => {
@@ -424,7 +407,6 @@ const router = {
         document.querySelectorAll('.sidebar a').forEach(link => {
           link.classList.toggle('active', link.dataset.page === page);
         });
-        renderSavedRecommendation();
         const savedStats = localStorage.getItem('userStats');
         if (savedStats) updateUserStats(JSON.parse(savedStats));
         else if (page === 'achievements') updateAchievements({

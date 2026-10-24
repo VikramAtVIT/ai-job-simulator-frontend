@@ -466,7 +466,7 @@ main {
   color: var(--text);
   font-weight: 800;
   background: rgba(8,11,27,.72);
-  content: "LOCKED · MASTER 4 SCENARIO TYPES TO REACH ADVANCED";
+  content: "LOCKED · REACH ADVANCED";
 }
 .scenario-name { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text); font-size: .87rem; font-weight: 700; }
 .scenario-level { display: inline-flex; flex: 0 0 auto; align-items: center; padding: 4px 8px; border: 1px solid transparent; border-radius: 999px; font-size: .68rem; font-weight: 800; line-height: 1.2; }

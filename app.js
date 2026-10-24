@@ -130,11 +130,11 @@ const scenarioByType = Object.fromEntries(scenarioCatalog.map(scenario => [scena
 const scenarioLabels = Object.fromEntries(scenarioCatalog.map(scenario => [scenario.type, scenario.name]));
 const levelCatalog = [
   { name: 'Starter', comment: 'Start strong', threshold: 0, icon: '🌱' },
-  { name: 'Explorer', comment: 'Build momentum', threshold: 1, icon: '🧭' },
-  { name: 'Builder', comment: 'Sharpen skills', threshold: 2, icon: '🧱' },
-  { name: 'Specialist', comment: 'Own your craft', threshold: 3, icon: '⚡' },
-  { name: 'Advanced', comment: 'Ready for the toughest scenarios', threshold: 4, icon: '🔥' },
-  { name: 'Pro', comment: 'Lead confidently', threshold: 5, icon: '👑' }
+  { name: 'Explorer', comment: 'Build momentum', threshold: 2, icon: '🧭' },
+  { name: 'Builder', comment: 'Sharpen skills', threshold: 4, icon: '🧱' },
+  { name: 'Specialist', comment: 'Own your craft', threshold: 6, icon: '⚡' },
+  { name: 'Advanced', comment: 'Ready for the toughest scenarios', threshold: 8, icon: '🔥' },
+  { name: 'Pro', comment: 'Lead confidently', threshold: 10, icon: '👑' }
 ];
 
 function escapeHtml(value) {
@@ -219,13 +219,13 @@ function renderLevels(stats) {
         <div class="level-progress-track" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progressPercent}"><span style="width:${progressPercent}%"></span></div>
         <small>${mastered} mastered · ${nextLevel ? `${needed} needed for ${nextLevel.name}` : 'All levels complete'}</small>
       </div>
-      <div class="level-rule"><strong>Mastery rule</strong><span>At least 2 evaluated attempts and a best score of 75% or higher on a scenario type.</span></div>
+      <div class="level-rule"><strong>Mastery & retries</strong><span>Master a scenario with at least 2 evaluated attempts and a best score of 75% or higher. Retry any scenario as often as you like; there is no attempt limit.</span></div>
     </section>
     <section class="level-ladder" aria-label="All career levels">
       ${levels.map((level, index) => {
         const details = levelCatalog[index];
         const status = level.current ? 'current' : level.completed ? 'complete' : 'locked';
-        const requirement = details.threshold === 0 ? 'Starting level' : `Master ${details.threshold} unique scenario type${details.threshold === 1 ? '' : 's'}`;
+        const requirement = details.threshold === 0 ? 'Starting level' : `Master ${details.threshold} unique scenario types`;
         return `<article class="level-card ${status}" aria-label="${details.name}: ${level.current ? 'current level' : level.completed ? 'completed' : 'locked'}">
           <div class="level-card-icon">${details.icon}</div><div class="level-card-copy"><span class="level-step">LEVEL ${String(index + 1).padStart(2, '0')}</span><h3>${details.name}</h3><p>${details.comment}</p><strong>${requirement}</strong></div>
           <span class="level-state">${level.current ? 'Current' : level.completed ? '✓ Achieved' : '🔒 Locked'}</span>

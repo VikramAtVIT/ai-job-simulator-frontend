@@ -503,6 +503,16 @@ main {
 
 .progress-card, .content-card { background: var(--panel) !important; border: 1px solid var(--border) !important; border-radius: 20px !important; box-shadow: var(--shadow) !important; color: var(--text); }
 .progress-card h2, .content-card h2, .content-card h3 { color: var(--text) !important; }
+.progress-page .scenario-progress {
+  height: auto;
+  margin-top: 0;
+  overflow: visible;
+  background: none;
+  border-radius: 0;
+}
+.progress-page .progress-row { display: block; }
+.progress-page .progress-bar-outer { min-height: 10px; }
+.progress-page .progress-bar-inner { min-height: 10px; }
 .overall-stat, .skill-item { background: rgba(255,255,255,.05) !important; }
 .stat-number, .skill-score, .progress-percentage { color: var(--secondary) !important; }
 .stat-label, .progress-label, .skill-name { color: var(--muted) !important; }

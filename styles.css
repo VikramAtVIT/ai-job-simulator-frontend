@@ -234,3 +234,169 @@ main {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Shared styling for the existing dashboard page templates. */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding: 22px 26px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+}
+.header h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
+  font-weight: 750;
+  letter-spacing: -.045em;
+}
+.header-right { display: flex; align-items: center; gap: 12px; }
+.notification-bell { color: var(--muted); cursor: pointer; font-size: 1.2rem; }
+.profile-btn, .btn-secondary {
+  padding: 10px 15px;
+  color: var(--text);
+  font-weight: 700;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.stat-card {
+  min-height: 126px;
+  padding: 20px;
+  background: linear-gradient(145deg, rgba(124,108,255,.2), rgba(255,255,255,.045));
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+.stat-card.secondary { background: linear-gradient(145deg, rgba(39,215,197,.17), rgba(255,255,255,.045)); }
+.stat-card.accent { background: linear-gradient(145deg, rgba(244,114,182,.17), rgba(255,255,255,.045)); }
+.stat-label, .stat-change { color: var(--muted); font-size: .78rem; }
+.stat-label { font-weight: 700; letter-spacing: .02em; }
+.stat-value { margin: 13px 0 5px; color: var(--text); font-size: 1.8rem; font-weight: 800; letter-spacing: -.05em; }
+.content-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, .75fr); gap: 18px; }
+.chat-section, .scenarios-section, .achievements-section, .feedback-section {
+  padding: 22px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+}
+.chat-header { display: flex; justify-content: space-between; gap: 15px; color: var(--text); font-weight: 800; }
+.chat-status { display: inline-block; width: 8px; height: 8px; margin-left: 8px; background: var(--secondary); border-radius: 50%; box-shadow: 0 0 0 5px rgba(39,215,197,.12); }
+.chat-header > span:last-child { color: var(--secondary); font-size: .78rem; font-weight: 700; }
+.chat-messages { min-height: 230px; max-height: 390px; margin: 18px 0 14px; padding: 16px; overflow: auto; background: rgba(0,0,0,.15); border: 1px solid var(--border); border-radius: 16px; }
+.message { display: flex; margin-bottom: 12px; }
+.message.user { justify-content: flex-end; }
+.message-bubble { max-width: 82%; padding: 12px 14px; color: #e9ecff; background: rgba(124,108,255,.16); border-radius: 13px; line-height: 1.55; }
+.message.user .message-bubble { color: #062522; background: var(--secondary); }
+.chat-input-area { display: flex; gap: 10px; }
+.chat-input { min-width: 0; padding: 13px 15px; color: var(--text); background: rgba(255,255,255,.07); border: 1px solid var(--border); border-radius: 12px; outline: none; }
+.chat-input::placeholder { color: #8790b3; }
+.chat-input:focus { border-color: var(--secondary); box-shadow: 0 0 0 4px rgba(39,215,197,.1); }
+.voice-btn, .chat-btn, .btn-primary { border: 0; border-radius: 11px; }
+.voice-btn { width: 46px; color: var(--text); background: rgba(39,215,197,.14); border: 1px solid rgba(39,215,197,.35); }
+.voice-btn.recording { background: #d94d72; }
+.chat-btn, .btn-primary { padding: 12px 17px; color: white; font-weight: 750; background: linear-gradient(110deg, var(--primary), #a855f7); box-shadow: 0 9px 22px rgba(124,108,255,.2); }
+.section-title { margin-bottom: 14px; color: var(--text); font-size: .95rem; font-weight: 800; letter-spacing: -.01em; }
+.scenarios-section, .achievements-section { margin-bottom: 18px; }
+.scenario-item { margin-bottom: 10px; padding: 14px; background: rgba(255,255,255,.045); border: 1px solid transparent; border-radius: 13px; cursor: pointer; }
+.scenario-item:hover, .scenario-item.active { background: rgba(124,108,255,.14); border-color: rgba(124,108,255,.42); }
+.scenario-name { display: flex; justify-content: space-between; gap: 10px; color: var(--text); font-size: .87rem; font-weight: 700; }
+.scenario-level { color: var(--secondary); font-size: .72rem; }
+.scenario-progress { height: 5px; margin-top: 11px; overflow: hidden; background: rgba(255,255,255,.1); border-radius: 5px; }
+.scenario-progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: inherit; }
+.achievement-item { display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+.achievement-item:last-child { border-bottom: 0; }
+.achievement-badge { grid-row: span 2; font-size: 1.2rem; }
+.achievement-name { color: var(--text); font-size: .84rem; font-weight: 750; }
+.achievement-desc { color: var(--muted); font-size: .75rem; }
+.achievement-locked { opacity: .5; }
+.feedback-section { margin-top: 18px; }
+.score-circle { display: grid; width: 86px; height: 86px; margin: 4px auto 18px; place-items: center; background: radial-gradient(circle at 35% 30%, #9b91ff, var(--primary)); border: 7px solid rgba(255,255,255,.1); border-radius: 50%; box-shadow: 0 0 0 8px rgba(124,108,255,.1); }
+.score-number { color: white; font-size: 1.55rem; font-weight: 850; }
+.rubric-item { display: flex; justify-content: space-between; gap: 15px; padding: 10px 0; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,.07); font-size: .86rem; }
+.rubric-score { color: var(--secondary); font-weight: 800; }
+.feedback-text { margin-top: 15px; padding: 14px; color: var(--muted); background: rgba(255,255,255,.045); border-radius: 12px; line-height: 1.55; font-size: .86rem; }
+.progress-card, .content-card { background: var(--panel) !important; border: 1px solid var(--border) !important; border-radius: 20px !important; box-shadow: var(--shadow) !important; color: var(--text); }
+.progress-card h2, .content-card h2, .content-card h3 { color: var(--text) !important; }
+.overall-stat, .skill-item { background: rgba(255,255,255,.05) !important; }
+.stat-number, .skill-score, .progress-percentage { color: var(--secondary) !important; }
+.stat-label, .progress-label, .skill-name { color: var(--muted) !important; }
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .content-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  main { padding: 18px 14px 34px; }
+  .header { align-items: flex-start; flex-direction: column; padding: 18px; }
+  .header-right { width: 100%; justify-content: space-between; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .chat-input-area { flex-wrap: wrap; }
+  .chat-input { flex: 1 1 calc(100% - 56px); }
+  .chat-btn { width: 100%; }
+}
+
+/* Keep page-specific inline templates on the same professional visual system. */
+.scenario-card {
+  background: var(--panel) !important;
+}
+.scenario-card-body { color: var(--text); }
+.scenario-card-body > p, .scenario-prompt p { color: var(--muted); }
+.scenario-details {
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid rgba(255,255,255,.07);
+}
+.detail-label, .progress-text { color: var(--muted) !important; }
+.detail-item span:not(.detail-label) { color: var(--text) !important; }
+.scenario-prompt {
+  color: var(--text);
+  background: rgba(124,108,255,.12) !important;
+  border-left-color: var(--secondary) !important;
+}
+.progress-bar-full, .progress-bar-outer, .skill-bar-outer {
+  background: rgba(255,255,255,.1) !important;
+}
+.scenario-card-footer {
+  background: rgba(0,0,0,.12) !important;
+  border-top-color: var(--border) !important;
+}
+.scenario-card-footer .btn-secondary {
+  background: rgba(255,255,255,.06) !important;
+  color: var(--text) !important;
+}
+.achievements-container {
+  background: var(--panel) !important;
+}
+.achievements-header { border-bottom-color: var(--border) !important; }
+.count-label, .achievement-progress span, .achievement-info p, .achievement-progress-small span {
+  color: var(--muted) !important;
+}
+.achievement-card, .achievement-card.locked {
+  background: rgba(255,255,255,.05) !important;
+  border-color: var(--border) !important;
+}
+.achievement-card.unlocked {
+  background: linear-gradient(145deg, rgba(124,108,255,.16), rgba(39,215,197,.07)) !important;
+  border-color: rgba(124,108,255,.5) !important;
+}
+.progress-card {
+  background: var(--panel) !important;
+}
+.overall-stat, .skill-item {
+  background: rgba(255,255,255,.05) !important;
+}
+.overall-stat .stat-label, .skill-item .skill-score { color: var(--muted) !important; }

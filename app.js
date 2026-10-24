@@ -127,9 +127,10 @@ function setupSocketListeners() {
   window.socket.on('userStats', updateUserStats);
   window.socket.on('feedbackGenerated', data => {
     displayFeedback(data.feedback);
-    if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
-      updateRecommendation(data.recommendation);
-    }
+    updateRecommendation(
+      data.recommendation
+      || (data.feedback && data.feedback.recommendation)
+    );
   });
   window.socket.on('scenarioStarted', data => {
     currentScenario = data.type;
@@ -140,14 +141,13 @@ function setupSocketListeners() {
   window.socket.on('aiResponse', data => {
     const message = typeof data.message === 'string' ? data.message.trim() : '';
     if (message) appendMessage(message, 'bot');
-    if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
-      updateRecommendation(data.recommendation);
-    }
+    updateRecommendation(data.recommendation || message);
   });
   window.socket.on('voiceAnalysis', data => {
     const feedback = typeof data.feedback === 'string' ? data.feedback.trim() : '';
     if (feedback) {
       appendMessage(`${feedback} (${data.duration}s • ${data.confidence}% confidence)`, 'bot');
+      updateRecommendation(feedback);
     }
     if (!voiceIsRecording && !voiceTranscript) {
       updateVoiceStatus('Response analyzed. Record another when ready.');

@@ -1,5 +1,6 @@
 let currentUser = null;
 let currentScenario = null;
+let recommendationPending = false;
 let pendingScenario = null;
 let voiceRecognition = null;
 let voiceStartedAt = 0;
@@ -131,9 +132,14 @@ function setupSocketListeners() {
       updateRecommendation(data.recommendation);
     } else if (typeof data.recommendationError === 'string') {
       showRecommendationStatus(data.recommendationError);
-    } else {
-      showRecommendationStatus('No skill-gap analysis was returned. Try generating feedback again.');
     }
+  });
+  window.socket.on('skillGapRecommendation', updateRecommendation);
+  window.socket.on('skillGapRecommendationError', data => {
+    const message = data && typeof data.message === 'string'
+      ? data.message
+      : 'AI skill-gap analysis is unavailable. Please try again later.';
+    showRecommendationStatus(message);
   });
   window.socket.on('scenarioStarted', data => {
     currentScenario = data.type;
@@ -154,7 +160,13 @@ function setupSocketListeners() {
       updateVoiceStatus('Response analyzed. Record another when ready.');
     }
   });
-  window.socket.on('error', message => console.error('Socket error:', message));
+  window.socket.on('error', message => {
+    console.error('Socket error:', message);
+    if (recommendationPending) {
+      const detail = typeof message === 'string' && message.trim() ? ` ${message.trim()}` : '';
+      showRecommendationStatus(`Could not analyze your response.${detail}`);
+    }
+  });
 }
 
 function updateBackendStatus(state, label) {
@@ -171,6 +183,7 @@ function updateRecommendation(recommendation) {
   const evidence = typeof recommendation.evidence === 'string' ? recommendation.evidence.trim() : '';
   const nextStep = typeof recommendation.nextStep === 'string' ? recommendation.nextStep.trim() : '';
   if (!skill || !evidence || !nextStep) return;
+  recommendationPending = false;
   latestRecommendation = `${skill}: ${evidence} Next practice: ${nextStep}`;
   const element = document.getElementById('aiRecommendation');
   if (element) {
@@ -180,6 +193,15 @@ function updateRecommendation(recommendation) {
 }
 
 function showRecommendationStatus(message) {
+  recommendationPending = false;
+  const element = document.getElementById('aiRecommendation');
+  if (!element) return;
+  element.textContent = message;
+  element.classList.add('recommendation-empty');
+}
+
+function showRecommendationProgress(message) {
+  recommendationPending = true;
   const element = document.getElementById('aiRecommendation');
   if (!element) return;
   element.textContent = message;
@@ -356,7 +378,7 @@ function generateFeedback() {
     appendMessage('Select a scenario and complete a response before requesting feedback.', 'bot');
     return;
   }
-  showRecommendationStatus('Analyzing your practice to find one skill to focus on next...');
+  showRecommendationProgress('Analyzing your practice to find one skill to focus on next...');
   window.socket.emit('generateFeedback', { scenarioType: currentScenario });
 }
 
@@ -635,6 +657,7 @@ function sendVoiceMessage() {
 
   const duration = voiceStartedAt ? (Date.now() - voiceStartedAt) / 1000 : 0;
   appendMessage(transcript, 'user');
+  showRecommendationProgress('Analyzing your latest response for a skill to focus on next...');
   const sendButton = document.getElementById('sendVoiceBtn');
   if (sendButton) sendButton.disabled = true;
   try {
@@ -659,6 +682,8 @@ function selectScenario(type) {
     return;
   }
   currentScenario = type;
+  latestRecommendation = null;
+  showRecommendationStatus('Send a text or voice response to get a personalized skill-gap focus.');
   document.querySelectorAll('.scenario-item[data-scenario]').forEach(button => {
     const isSelected = button.dataset.scenario === type;
     button.classList.toggle('selected', isSelected);
@@ -687,6 +712,7 @@ function sendMessage() {
   if (!message || !currentScenario) return;
 
   appendMessage(message, 'user');
+  showRecommendationProgress('Analyzing your latest response for a skill to focus on next...');
   input.value = '';
   window.socket.emit('message', { scenarioType: currentScenario, message });
 }

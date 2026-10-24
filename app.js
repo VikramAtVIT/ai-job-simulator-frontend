@@ -71,6 +71,10 @@ function applyPreferences() {
       card.classList.toggle('locked-scenario', !unlocked);
     }
   });
+  const recommendationsContainer = document.querySelector('.recommendations-container');
+  if (recommendationsContainer) {
+    recommendationsContainer.hidden = !preferences.recommendations;
+  }
   const lightModeToggle = document.getElementById('lightModeToggle');
   const hardScenariosToggle = document.getElementById('hardScenariosToggle');
   const recommendationsToggle = document.getElementById('recommendationsToggle');
@@ -106,17 +110,40 @@ const scenarioLabels = {
 };
 
 function renderReactRecommendation(recommendation) {
-  const rootElement = document.getElementById('react-coaching-panel');
+  const rootElement = document.getElementById('recommendations-list');
   if (!rootElement || !window.React || !window.ReactDOM || !getPreferences().recommendations) return;
   const recommendationElement = React.createElement(
     'div',
-    { className: 'react-recommendation' },
+    { className: 'react-recommendation recommendation-card' },
     React.createElement('span', { className: 'eyebrow' }, 'Live coaching'),
     React.createElement('strong', null, 'Skill-gap recommendation'),
     React.createElement('p', null, recommendation)
   );
   if (!rootElement._reactRoot) rootElement._reactRoot = ReactDOM.createRoot(rootElement);
   rootElement._reactRoot.render(recommendationElement);
+}
+
+function saveRecommendation(recommendation) {
+  localStorage.setItem('latestRecommendation', JSON.stringify({
+    recommendation,
+    scenario: currentScenario,
+    createdAt: new Date().toISOString()
+  }));
+}
+
+function renderSavedRecommendation() {
+  if (!getPreferences().recommendations) return;
+  const saved = localStorage.getItem('latestRecommendation');
+  if (!saved) return;
+  try {
+    const data = JSON.parse(saved);
+    if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
+      renderReactRecommendation(data.recommendation.trim());
+    }
+  } catch (error) {
+    localStorage.removeItem('latestRecommendation');
+    console.error('Unable to load saved recommendation:', error);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -143,14 +170,16 @@ function setupSocketListeners() {
   window.socket.on('scenarioStarted', data => {
     currentScenario = data.type;
     const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) chatMessages.innerHTML = '<div id="react-coaching-panel"></div>';
+    if (chatMessages) chatMessages.innerHTML = '';
     appendMessage(data.intro, 'bot');
   });
   window.socket.on('aiResponse', data => {
     const message = typeof data.message === 'string' ? data.message.trim() : '';
     if (message) appendMessage(message, 'bot');
     if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
-      renderReactRecommendation(data.recommendation.trim());
+      const recommendation = data.recommendation.trim();
+      saveRecommendation(recommendation);
+      renderReactRecommendation(recommendation);
     }
   });
   window.socket.on('voiceAnalysis', data => {
@@ -395,6 +424,7 @@ const router = {
         document.querySelectorAll('.sidebar a').forEach(link => {
           link.classList.toggle('active', link.dataset.page === page);
         });
+        renderSavedRecommendation();
         const savedStats = localStorage.getItem('userStats');
         if (savedStats) updateUserStats(JSON.parse(savedStats));
         else if (page === 'achievements') updateAchievements({
@@ -592,7 +622,7 @@ function selectScenario(type) {
 
   const chatMessages = document.getElementById('chatMessages');
   if (chatMessages) {
-    chatMessages.innerHTML = '<div class="chat-empty-state">Connecting to your scenario...</div><div id="react-coaching-panel"></div>';
+    chatMessages.innerHTML = '<div class="chat-empty-state">Connecting to your scenario...</div>';
   }
   window.socket.emit('selectScenario', { scenarioType: type });
 }

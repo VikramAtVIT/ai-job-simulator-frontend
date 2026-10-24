@@ -79,6 +79,23 @@ function applyPreferences() {
   if (hardScenariosToggle) hardScenariosToggle.checked = preferences.hardScenarios;
 }
 
+function consumeGoogleRedirect() {
+  const params = new URLSearchParams(window.location.search);
+  const authToken = params.get('authToken');
+  const userId = params.get('userId');
+  const user = params.get('user');
+  if (!authToken || !userId || !user) return;
+  try {
+    localStorage.setItem('authToken', authToken);
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('currentUser', user);
+    localStorage.removeItem('userStats');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } catch (error) {
+    console.error('Unable to complete Google sign-in:', error);
+  }
+}
+
 const scenarioLabels = {
   manager_review: 'Manager performance review',
   client_requirement: 'Client requirement discussion',
@@ -88,58 +105,19 @@ const scenarioLabels = {
   priority_conflict: 'Priority conflict resolution'
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   applyTheme(getPreferences().theme);
-  let clerk;
-  try {
-    clerk = await window.clerkAuth.initialize();
-  } catch (error) {
-    console.error('Authentication initialization failed:', error);
-    const content = document.getElementById('main-content');
-    if (content) {
-      content.innerHTML = '<section class="load-error" role="alert"><span class="eyebrow">Authentication unavailable</span><h1>We could not verify your session</h1><p>Check that Clerk is configured and try signing in again.</p><a class="primary-button" href="./login.html">Return to sign in</a></section>';
-    }
-    return;
-  }
-  if (!clerk.isSignedIn || !clerk.user || !clerk.session) {
-    window.location.replace('./login.html');
-    return;
-  }
-  if (localStorage.getItem('clerkUserId') !== clerk.user.id) {
-    localStorage.removeItem('userStats');
-    localStorage.setItem('clerkUserId', clerk.user.id);
-  }
-  currentUser = {
-    id: clerk.user.id,
-    name: clerk.user.fullName || clerk.user.firstName || 'User',
-    email: clerk.user.primaryEmailAddress?.emailAddress || ''
-  };
+  consumeGoogleRedirect();
+  checkAuth();
   window.socket = io(window.APP_CONFIG.backendUrl, {
-    auth: async callback => {
-      try {
-        callback({ token: await clerk.session.getToken() });
-      } catch (error) {
-        console.error('Unable to refresh the Clerk session token:', error);
-        callback({ token: '' });
-      }
+    auth: {
+      userId: localStorage.getItem('userId') || ''
     }
   });
   setupSocketListeners();
-  clerk.addListener(({ session, user }) => {
-    if (!session || !user) {
-      window.socket.disconnect();
-      window.location.replace('./login.html');
-      return;
-    }
-    currentUser = {
-      id: user.id,
-      name: user.fullName || user.firstName || 'User',
-      email: user.primaryEmailAddress?.emailAddress || ''
-    };
-    window.socket.disconnect();
-    window.socket.connect();
-  });
-  router.navigate('dashboard');
+  if (localStorage.getItem('authToken')) {
+    router.navigate('dashboard');
+  }
 });
 
 function setupSocketListeners() {
@@ -424,16 +402,28 @@ function displayFeedback(feedback) {
   }
 }
 
-async function logout() {
-  localStorage.removeItem('userStats');
-  localStorage.removeItem('clerkUserId');
-  try {
-    const clerk = await window.clerkAuth.initialize();
-    await clerk.signOut({ redirectUrl: new URL('./login.html', window.location.href).href });
-  } catch (error) {
-    console.error('Unable to sign out with Clerk:', error);
-    window.location.replace('./login.html');
+function checkAuth() {
+  const token = localStorage.getItem('authToken');
+  if (!token && !window.location.href.includes('login')) {
+    window.location.href = './login.html';
   }
+  if (token) {
+    try {
+      currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    } catch (error) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      window.location.href = './login.html';
+    }
+  }
+}
+
+function logout() {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('currentUser');
+  localStorage.removeItem('userStats');
+  window.location.href = './login.html';
 }
 
 function handleLogout() {

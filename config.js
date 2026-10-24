@@ -4,6 +4,7 @@
     const productionBackendUrl = 'https://ai-job-simulator-backend.onrender.com';
 
     window.APP_CONFIG = {
-        backendUrl: (savedBackendUrl || (isLocalFrontend ? 'http://localhost:3000' : productionBackendUrl)).replace(/\/$/, '')
+        backendUrl: (savedBackendUrl || (isLocalFrontend ? 'http://localhost:3000' : productionBackendUrl)).replace(/\/$/, ''),
+        googleAuthEnabled: false
     };
 })();

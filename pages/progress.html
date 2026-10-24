@@ -31,45 +31,84 @@
 
         <div class="progress-card">
             <h2>Performance by Scenario</h2>
+            <p class="scenario-progress-help">Bars show your mastery score for each scenario. Scores update after practice; a dash means you have not attempted it yet.</p>
             <div class="scenario-progress">
                 <div class="progress-row" data-scenario="manager_review">
-                    <div class="progress-label">Manager Review</div>
-                    <div class="progress-chart">
-                        <div class="progress-bar-outer">
-                            <div class="progress-bar-inner" style="width: 0%; background: linear-gradient(90deg, #28a745 0%, #20c997 100%);"></div>
-                        </div>
-                        <span class="progress-percentage">85%</span>
+                    <div class="progress-row-heading">
+                        <div class="progress-label">Manager Review</div>
+                        <span class="progress-percentage">—</span>
                     </div>
+                    <div class="progress-chart">
+                        <div class="progress-bar-outer" role="progressbar" aria-label="Manager Review mastery" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div class="progress-bar-inner"></div>
+                        </div>
+                    </div>
+                    <div class="progress-meta">Not attempted yet</div>
                 </div>
 
                 <div class="progress-row" data-scenario="client_requirement">
-                    <div class="progress-label">Client Requirement</div>
-                    <div class="progress-chart">
-                        <div class="progress-bar-outer">
-                            <div class="progress-bar-inner" style="width: 0%; background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);"></div>
-                        </div>
-                        <span class="progress-percentage">78%</span>
+                    <div class="progress-row-heading">
+                        <div class="progress-label">Client Requirement</div>
+                        <span class="progress-percentage">—</span>
                     </div>
+                    <div class="progress-chart">
+                        <div class="progress-bar-outer" role="progressbar" aria-label="Client Requirement mastery" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div class="progress-bar-inner"></div>
+                        </div>
+                    </div>
+                    <div class="progress-meta">Not attempted yet</div>
                 </div>
 
                 <div class="progress-row" data-scenario="production_incident">
-                    <div class="progress-label">Production Incident</div>
-                    <div class="progress-chart">
-                        <div class="progress-bar-outer">
-                            <div class="progress-bar-inner" style="width: 0%; background: linear-gradient(90deg, #ff6b6b 0%, #ff5252 100%);"></div>
-                        </div>
-                        <span class="progress-percentage">72%</span>
+                    <div class="progress-row-heading">
+                        <div class="progress-label">Production Incident</div>
+                        <span class="progress-percentage">—</span>
                     </div>
+                    <div class="progress-chart">
+                        <div class="progress-bar-outer" role="progressbar" aria-label="Production Incident mastery" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div class="progress-bar-inner"></div>
+                        </div>
+                    </div>
+                    <div class="progress-meta">Not attempted yet</div>
                 </div>
 
                 <div class="progress-row" data-scenario="difficult_colleague">
-                    <div class="progress-label">Difficult Colleague</div>
-                    <div class="progress-chart">
-                        <div class="progress-bar-outer">
-                            <div class="progress-bar-inner" style="width: 0%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);"></div>
-                        </div>
-                        <span class="progress-percentage">68%</span>
+                    <div class="progress-row-heading">
+                        <div class="progress-label">Difficult Colleague</div>
+                        <span class="progress-percentage">—</span>
                     </div>
+                    <div class="progress-chart">
+                        <div class="progress-bar-outer" role="progressbar" aria-label="Difficult Colleague mastery" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div class="progress-bar-inner"></div>
+                        </div>
+                    </div>
+                    <div class="progress-meta">Not attempted yet</div>
+                </div>
+
+                <div class="progress-row" data-scenario="daily_standup">
+                    <div class="progress-row-heading">
+                        <div class="progress-label">Daily Standup</div>
+                        <span class="progress-percentage">—</span>
+                    </div>
+                    <div class="progress-chart">
+                        <div class="progress-bar-outer" role="progressbar" aria-label="Daily Standup mastery" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div class="progress-bar-inner"></div>
+                        </div>
+                    </div>
+                    <div class="progress-meta">Not attempted yet</div>
+                </div>
+
+                <div class="progress-row" data-scenario="priority_conflict">
+                    <div class="progress-row-heading">
+                        <div class="progress-label">Priority Conflict</div>
+                        <span class="progress-percentage">—</span>
+                    </div>
+                    <div class="progress-chart">
+                        <div class="progress-bar-outer" role="progressbar" aria-label="Priority Conflict mastery" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div class="progress-bar-inner"></div>
+                        </div>
+                    </div>
+                    <div class="progress-meta">Not attempted yet</div>
                 </div>
             </div>
         </div>
@@ -160,49 +199,69 @@
         }
 
         .scenario-progress {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
         }
 
         .progress-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            min-width: 0;
+            padding: 16px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+            border-radius: 14px;
         }
 
-        .progress-label {
-            width: 150px;
-            font-size: 13px;
-            font-weight: 600;
+        .progress-row-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
         .progress-chart {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            width: 100%;
         }
 
         .progress-bar-outer {
-            flex: 1;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, .12);
+            border-radius: 99px;
             overflow: hidden;
         }
 
         .progress-bar-inner {
             height: 100%;
-            transition: width 0.3s ease;
+            width: 0;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: inherit;
+            transition: width .45s ease;
         }
 
         .progress-percentage {
-            width: 45px;
-            text-align: right;
-            font-weight: 600;
-            font-size: 13px;
-            color: var(--text);
+            flex: 0 0 auto;
+            padding: 4px 8px;
+            color: var(--secondary);
+            font-size: .9rem;
+            font-weight: 800;
+            background: rgba(39, 215, 197, .1);
+            border-radius: 8px;
+        }
+
+        .scenario-progress-help, .progress-meta {
+            color: var(--muted);
+            font-size: .82rem;
+            line-height: 1.5;
+        }
+
+        .scenario-progress-help {
+            margin: -8px 0 18px;
+        }
+
+        .progress-meta {
+            margin-top: 9px;
         }
 
         .skills-grid {
@@ -241,6 +300,10 @@
         .skill-score {
             font-size: 12px;
             color: #999;
+        }
+
+        @media (max-width: 680px) {
+            .scenario-progress { grid-template-columns: 1fr; }
         }
     </style>
 </div>

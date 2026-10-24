@@ -10,7 +10,7 @@ let voiceIsRecording = false;
 let voiceRestartTimeout = null;
 let latestStats = null;
 
-const defaultPreferences = { theme: 'dark', hardScenarios: true, recommendations: true };
+const defaultPreferences = { theme: 'dark', hardScenarios: true };
 
 function getPreferences() {
   try {
@@ -71,16 +71,10 @@ function applyPreferences() {
       card.classList.toggle('locked-scenario', !unlocked);
     }
   });
-  const recommendationsSection = document.getElementById('recommendationsSection');
-  if (recommendationsSection) {
-    recommendationsSection.hidden = !preferences.recommendations;
-  }
   const lightModeToggle = document.getElementById('lightModeToggle');
   const hardScenariosToggle = document.getElementById('hardScenariosToggle');
-  const recommendationsToggle = document.getElementById('recommendationsToggle');
   if (lightModeToggle) lightModeToggle.checked = preferences.theme === 'light';
   if (hardScenariosToggle) hardScenariosToggle.checked = preferences.hardScenarios;
-  if (recommendationsToggle) recommendationsToggle.checked = preferences.recommendations;
 }
 
 function consumeGoogleRedirect() {
@@ -109,20 +103,6 @@ const scenarioLabels = {
   priority_conflict: 'Priority conflict resolution'
 };
 
-function renderReactRecommendation(recommendation) {
-  const rootElement = document.getElementById('react-coaching-panel');
-  if (!rootElement || !window.React || !window.ReactDOM || !getPreferences().recommendations) return;
-  const recommendationElement = React.createElement(
-    'div',
-    { className: 'react-recommendation' },
-    React.createElement('span', { className: 'eyebrow' }, 'Live coaching'),
-    React.createElement('strong', null, 'Skill-gap recommendation'),
-    React.createElement('p', null, recommendation)
-  );
-  if (!rootElement._reactRoot) rootElement._reactRoot = ReactDOM.createRoot(rootElement);
-  rootElement._reactRoot.render(recommendationElement);
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(getPreferences().theme);
   consumeGoogleRedirect();
@@ -140,6 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupSocketListeners() {
   if (!window.socket) return;
+  window.socket.on('connect', () => updateBackendStatus('online', 'Coach online'));
+  window.socket.on('disconnect', () => updateBackendStatus('offline', 'Coach offline'));
+  window.socket.on('connect_error', () => updateBackendStatus('offline', 'Coach unavailable'));
   window.socket.on('userStats', updateUserStats);
   window.socket.on('feedbackGenerated', data => {
     displayFeedback(data.feedback);
@@ -148,30 +131,30 @@ function setupSocketListeners() {
     currentScenario = data.type;
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) chatMessages.innerHTML = '';
-    const recommendationPanel = document.getElementById('react-coaching-panel');
-    if (recommendationPanel) {
-      if (recommendationPanel._reactRoot) {
-        recommendationPanel._reactRoot.unmount();
-        delete recommendationPanel._reactRoot;
-      }
-      recommendationPanel.innerHTML = '<div class="recommendation-empty">Complete a response to receive a focused skill-gap recommendation.</div>';
-    }
     appendMessage(data.intro, 'bot');
   });
   window.socket.on('aiResponse', data => {
     const message = typeof data.message === 'string' ? data.message.trim() : '';
     if (message) appendMessage(message, 'bot');
-    if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
-      renderReactRecommendation(data.recommendation.trim());
-    }
   });
   window.socket.on('voiceAnalysis', data => {
-    const analysis = document.getElementById('voiceAnalysis');
-    if (!analysis) return;
-    analysis.textContent = `${data.feedback} ${data.duration}s • ${data.confidence}% confidence`;
-    updateVoiceStatus('Voice response sent.');
+    const feedback = typeof data.feedback === 'string' ? data.feedback.trim() : '';
+    if (feedback) {
+      appendMessage(`${feedback} (${data.duration}s • ${data.confidence}% confidence)`, 'bot');
+    }
+    if (!voiceIsRecording && !voiceTranscript) {
+      updateVoiceStatus('Response analyzed. Record another when ready.');
+    }
   });
   window.socket.on('error', message => console.error('Socket error:', message));
+}
+
+function updateBackendStatus(state, label) {
+  const status = document.getElementById('backendStatus');
+  if (!status) return;
+  status.dataset.state = state;
+  const labelElement = status.querySelector('.backend-status-label');
+  if (labelElement) labelElement.textContent = label;
 }
 
 function updateUserStats(stats) {
@@ -210,14 +193,29 @@ function updateUserStats(stats) {
     const fullProgressBar = item.querySelector('.progress-fill');
     const percentage = item.querySelector('.progress-percentage');
     const progressText = item.querySelector('.progress-text');
-    const mastery = progress ? Math.min(100, progress.mastery || progress.bestScore || 0) : 0;
+    const progressMeta = item.querySelector('.progress-meta');
+    const attempts = Number(progress && progress.attempts) || 0;
+    const rawMastery = Number(progress && progress.mastery);
+    const rawBestScore = Number(progress && progress.bestScore);
+    const hasMastery = Number.isFinite(rawMastery) && rawMastery >= 0;
+    const hasBestScore = Number.isFinite(rawBestScore) && rawBestScore >= 0;
+    const hasProgress = attempts > 0 || hasMastery || hasBestScore;
+    const mastery = Math.min(100, Math.max(0, hasMastery ? rawMastery : hasBestScore ? rawBestScore : 0));
+    const bestScore = hasBestScore ? Math.min(100, Math.max(0, rawBestScore)) : mastery;
     if (bar) {
       bar.style.width = `${mastery}%`;
     }
     if (progressBar) progressBar.style.width = `${mastery}%`;
     if (fullProgressBar) fullProgressBar.style.width = `${mastery}%`;
-    if (percentage) percentage.textContent = `${mastery}%`;
+    if (percentage) percentage.textContent = hasProgress ? `${Math.round(mastery)}%` : '—';
     if (progressText) progressText.textContent = `${mastery}% Mastered`;
+    const progressBarContainer = item.querySelector('[role="progressbar"]');
+    if (progressBarContainer) progressBarContainer.setAttribute('aria-valuenow', String(Math.round(mastery)));
+    if (progressMeta) {
+      progressMeta.textContent = hasProgress
+        ? `${attempts} attempt${attempts === 1 ? '' : 's'} · Best score ${Math.round(bestScore)}%`
+        : 'Not attempted yet';
+    }
   });
   updateSkillDevelopment(stats);
   applyPreferences();
@@ -395,6 +393,11 @@ function toggleProfileMenu() {
 
 const router = {
   navigate(page) {
+    const availablePages = ['dashboard', 'scenarios', 'progress', 'achievements', 'settings', 'help'];
+    if (!availablePages.includes(page)) {
+      console.error(`Unsupported page requested: ${page}`);
+      page = 'dashboard';
+    }
     fetch(`./pages/${page}.html`)
       .then(r => {
         if (!r.ok) throw new Error(`Unable to load ${page}`);
@@ -416,7 +419,13 @@ const router = {
           scenarioProgress: {}
         });
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error(err);
+        const content = document.getElementById('main-content');
+        if (content) {
+          content.innerHTML = '<section class="load-error" role="alert"><span class="eyebrow">Something went wrong</span><h1>We could not load this page</h1><p>Check your connection and try again.</p><button class="btn-primary" type="button" onclick="router.navigate(\'dashboard\')">Return to dashboard</button></section>';
+        }
+      });
   }
 };
 
@@ -570,18 +579,46 @@ function updateVoiceTranscript(transcript) {
   }
 }
 
+function resetVoicePractice(statusMessage) {
+  voiceTranscript = '';
+  voiceInterimTranscript = '';
+  voiceConfidence = 0;
+  voiceStartedAt = 0;
+  voiceIsRecording = false;
+  if (voiceRestartTimeout) {
+    window.clearTimeout(voiceRestartTimeout);
+    voiceRestartTimeout = null;
+  }
+  setVoiceRecordingState(false);
+  updateVoiceTranscript('');
+  const sendButton = document.getElementById('sendVoiceBtn');
+  if (sendButton) sendButton.disabled = true;
+  const analysis = document.getElementById('voiceAnalysis');
+  if (analysis) analysis.textContent = '';
+  updateVoiceStatus(statusMessage);
+}
+
 function sendVoiceMessage() {
   const transcript = voiceTranscript.trim();
   if (!transcript || !currentScenario) return;
 
+  const duration = voiceStartedAt ? (Date.now() - voiceStartedAt) / 1000 : 0;
   appendMessage(transcript, 'user');
-  window.socket.emit('voiceMessage', {
-    transcript,
-    duration: (Date.now() - voiceStartedAt) / 1000,
-    confidence: voiceConfidence
-  });
-  document.getElementById('sendVoiceBtn').disabled = true;
-  updateVoiceStatus('Sending voice response...');
+  const sendButton = document.getElementById('sendVoiceBtn');
+  if (sendButton) sendButton.disabled = true;
+  try {
+    window.socket.emit('voiceMessage', {
+      transcript,
+      duration,
+      confidence: voiceConfidence
+    });
+  } catch (error) {
+    console.error('Unable to send voice response:', error);
+    if (sendButton) sendButton.disabled = false;
+    updateVoiceStatus('Could not send your response. Please try again.');
+    return;
+  }
+  resetVoicePractice('Response sent. Record another when ready.');
 }
 
 function selectScenario(type) {
@@ -600,6 +637,10 @@ function selectScenario(type) {
   const scenarioLabel = document.getElementById('selectedScenario');
   if (scenarioLabel) {
     scenarioLabel.textContent = `Selected: ${scenarioLabels[type] || type}`;
+  }
+  const dashboardScenarioLabel = document.getElementById('scenarioLabel');
+  if (dashboardScenarioLabel) {
+    dashboardScenarioLabel.textContent = scenarioLabels[type] || type;
   }
 
   const chatMessages = document.getElementById('chatMessages');

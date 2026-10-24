@@ -50,7 +50,7 @@
                     placeholder="Type your response or use voice..." 
                     onkeypress="handleChatKeypress(event)"
                 >
-                <button class="chat-btn" onclick="sendMessage()">Send</button>
+                <button class="chat-btn" type="button" onclick="sendMessage()">Send</button>
             </div>
 
             <div class="voice-chat-panel">
@@ -134,13 +134,6 @@
                     <div class="scenario-progress">
                         <div class="scenario-progress-bar" style="width: 0%"></div>
                     </div>
-                </div>
-            </div>
-
-            <div class="recommendations-section" id="recommendationsSection">
-                <div class="section-title">AI Recommendations</div>
-                <div id="react-coaching-panel" class="recommendation-content">
-                    <div class="recommendation-empty">Complete a response to receive a focused skill-gap recommendation.</div>
                 </div>
             </div>
 

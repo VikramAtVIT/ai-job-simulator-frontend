@@ -8,6 +8,7 @@ let voiceInterimTranscript = '';
 let voiceConfidence = 0;
 let voiceIsRecording = false;
 let voiceRestartTimeout = null;
+let latestStats = null;
 
 const defaultPreferences = { theme: 'dark', hardScenarios: true, recommendations: true };
 
@@ -57,11 +58,18 @@ function applyPreferences() {
   const preferences = getPreferences();
   applyTheme(preferences.theme);
   document.querySelectorAll('[data-hard="true"]').forEach(element => {
-    element.hidden = !preferences.hardScenarios;
+    const unlocked = !latestStats || latestStats.hardScenariosUnlocked;
+    element.hidden = !preferences.hardScenarios && unlocked;
+    element.classList.toggle('locked-scenario', !unlocked);
+    element.setAttribute('aria-disabled', String(!unlocked));
   });
   document.querySelectorAll('.difficulty.hard').forEach(element => {
     const card = element.closest('.scenario-card');
-    if (card) card.hidden = !preferences.hardScenarios;
+    if (card) {
+      const unlocked = !latestStats || latestStats.hardScenariosUnlocked;
+      card.hidden = !preferences.hardScenarios && unlocked;
+      card.classList.toggle('locked-scenario', !unlocked);
+    }
   });
   const lightModeToggle = document.getElementById('lightModeToggle');
   const hardScenariosToggle = document.getElementById('hardScenariosToggle');
@@ -151,16 +159,18 @@ function setupSocketListeners() {
 }
 
 function updateUserStats(stats) {
+  latestStats = stats;
   localStorage.setItem('userStats', JSON.stringify(stats));
   const values = {
     completedCount: stats.completedScenarios,
     avgScore: `${stats.averageScore}%`,
     currentLevel: stats.currentLevel,
+    levelComment: stats.levelComment,
     totalAttempts: stats.totalAttempts
   };
   Object.entries(values).forEach(([id, value]) => {
     const element = document.getElementById(id);
-    if (element) element.textContent = value;
+    if (element && value !== undefined) element.textContent = value;
   });
   const pageValues = {
     progressAverageScore: `${stats.averageScore}%`,
@@ -176,11 +186,20 @@ function updateUserStats(stats) {
   document.querySelectorAll('[data-scenario]').forEach(item => {
     const progress = stats.scenarioProgress && stats.scenarioProgress[item.dataset.scenario];
     const bar = item.querySelector('.scenario-progress-bar');
-    if (bar && progress) {
-      const mastery = Math.min(100, progress.bestScore || 0);
+    const progressBar = item.querySelector('.progress-bar-inner');
+    const fullProgressBar = item.querySelector('.progress-fill');
+    const percentage = item.querySelector('.progress-percentage');
+    const progressText = item.querySelector('.progress-text');
+    const mastery = progress ? Math.min(100, progress.mastery || progress.bestScore || 0) : 0;
+    if (bar) {
       bar.style.width = `${mastery}%`;
     }
+    if (progressBar) progressBar.style.width = `${mastery}%`;
+    if (fullProgressBar) fullProgressBar.style.width = `${mastery}%`;
+    if (percentage) percentage.textContent = `${mastery}%`;
+    if (progressText) progressText.textContent = `${mastery}% Mastered`;
   });
+  applyPreferences();
 }
 
 function generateFeedback() {
@@ -263,6 +282,9 @@ const router = {
         document.getElementById('main-content').innerHTML = html;
         attachPageHandlers();
         applyPreferences();
+        document.querySelectorAll('.sidebar a').forEach(link => {
+          link.classList.toggle('active', link.dataset.page === page);
+        });
         const savedStats = localStorage.getItem('userStats');
         if (savedStats) updateUserStats(JSON.parse(savedStats));
       })
@@ -273,7 +295,7 @@ const router = {
 function attachPageHandlers() {
   const chatMessages = document.getElementById('chatMessages');
 
-  document.querySelectorAll('[data-scenario]').forEach(button => {
+  document.querySelectorAll('.scenario-item[data-scenario]').forEach(button => {
     button.addEventListener('click', () => selectScenario(button.dataset.scenario));
   });
 
@@ -435,8 +457,13 @@ function sendVoiceMessage() {
 }
 
 function selectScenario(type) {
+  const hardScenarios = ['production_incident', 'difficult_colleague', 'priority_conflict'];
+  if (hardScenarios.includes(type) && latestStats && !latestStats.hardScenariosUnlocked) {
+    appendMessage('Hard scenarios unlock at Advanced level after you master four skills.', 'bot');
+    return;
+  }
   currentScenario = type;
-  document.querySelectorAll('[data-scenario]').forEach(button => {
+  document.querySelectorAll('.scenario-item[data-scenario]').forEach(button => {
     const isSelected = button.dataset.scenario === type;
     button.classList.toggle('selected', isSelected);
     button.setAttribute('aria-pressed', String(isSelected));

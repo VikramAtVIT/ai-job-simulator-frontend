@@ -13,13 +13,13 @@
     <aside class="sidebar">
       <h2>AI Job Simulator</h2>
       <nav>
-        <a href="#" onclick="router.navigate('dashboard'); return false;">Dashboard</a>
-        <a href="#" onclick="router.navigate('scenarios'); return false;">Scenarios</a>
-        <a href="#" onclick="router.navigate('progress'); return false;">Progress</a>
-        <a href="#" onclick="router.navigate('achievements'); return false;">Achievements</a>
-        <a href="#" onclick="router.navigate('settings'); return false;">Settings</a>
-        <a href="#" onclick="router.navigate('help'); return false;">Help</a>
-        <a href="#" onclick="logout(); return false;">Logout</a>
+        <a data-page="dashboard" href="#" onclick="router.navigate('dashboard'); return false;"><span>▦</span>Dashboard</a>
+        <a data-page="scenarios" href="#" onclick="router.navigate('scenarios'); return false;"><span>◈</span>Scenarios</a>
+        <a data-page="progress" href="#" onclick="router.navigate('progress'); return false;"><span>↗</span>Progress</a>
+        <a data-page="achievements" href="#" onclick="router.navigate('achievements'); return false;"><span>✦</span>Achievements</a>
+        <a data-page="settings" href="#" onclick="router.navigate('settings'); return false;"><span>⚙</span>Settings</a>
+        <a data-page="help" href="#" onclick="router.navigate('help'); return false;"><span>?</span>Help</a>
+        <a data-page="logout" href="#" onclick="logout(); return false;"><span>↪</span>Logout</a>
       </nav>
       <div class="sidebar-footer">
         <button class="theme-toggle sidebar-theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle colour theme">

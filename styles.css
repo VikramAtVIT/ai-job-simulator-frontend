@@ -110,10 +110,21 @@ a { color: inherit; }
   padding: 13px 15px;
   color: var(--muted);
   text-decoration: none;
-  border: 1px solid transparent;
+  border: 1px solid rgba(255,255,255,.08);
   border-radius: 13px;
   transition: .25s ease;
 }
+.sidebar a span { width: 20px; color: var(--secondary); text-align: center; font-weight: 800; }
+.sidebar a.active {
+  color: var(--text);
+  background: linear-gradient(90deg, rgba(124,108,255,.23), rgba(39,215,197,.08));
+  border-color: rgba(39,215,197,.45);
+  box-shadow: inset 3px 0 0 var(--secondary), 0 8px 22px rgba(0,0,0,.12);
+}
+.sidebar a[data-page="scenarios"].active { border-color: rgba(124,108,255,.55); box-shadow: inset 3px 0 0 var(--primary), 0 8px 22px rgba(0,0,0,.12); }
+.sidebar a[data-page="progress"].active { border-color: rgba(39,215,197,.55); }
+.sidebar a[data-page="achievements"].active { border-color: rgba(244,114,182,.55); box-shadow: inset 3px 0 0 var(--pink), 0 8px 22px rgba(0,0,0,.12); }
+.sidebar a[data-page="settings"].active { border-color: rgba(255,190,92,.55); box-shadow: inset 3px 0 0 #ffbe5c, 0 8px 22px rgba(0,0,0,.12); }
 .sidebar a:hover, .sidebar a:focus-visible {
   color: var(--text);
   background: rgba(124, 108, 255, .16);
@@ -373,6 +384,30 @@ main {
 .achievements-section { margin-bottom: 18px; }
 .scenario-item { margin-bottom: 10px; padding: 14px; background: rgba(255,255,255,.045); border: 1px solid transparent; border-radius: 13px; cursor: pointer; }
 .scenario-item:hover, .scenario-item.active { background: rgba(124,108,255,.14); border-color: rgba(124,108,255,.42); }
+.scenario-item.locked-scenario { position: relative; overflow: hidden; opacity: .7; cursor: not-allowed; }
+.scenario-item.locked-scenario::after {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  background: rgba(8,11,27,.72);
+  content: "LOCKED • ADVANCED LEVEL";
+}
+.scenario-card.locked-scenario { position: relative; overflow: hidden; opacity: .72; }
+.scenario-card.locked-scenario::after {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  font-weight: 800;
+  background: rgba(8,11,27,.72);
+  content: "LOCKED • MASTER 4 SKILLS";
+}
 .scenario-name { display: flex; justify-content: space-between; gap: 10px; color: var(--text); font-size: .87rem; font-weight: 700; }
 .scenario-level { color: var(--secondary); font-size: .72rem; }
 .scenario-progress { height: 5px; margin-top: 11px; overflow: hidden; background: rgba(255,255,255,.1); border-radius: 5px; }
@@ -439,7 +474,10 @@ main {
   background: linear-gradient(180deg, #ffffff, #e8edf8);
 }
 :root[data-theme="light"] .scenarios-section .section-title { background: rgba(255,255,255,.96); }
-:root[data-theme="light"] .message-bubble { color: #263653; }
+:root[data-theme="light"] .message-bubble { color: #17233d; background: #e2e8f7; border-color: rgba(52,73,112,.14); }
+:root[data-theme="light"] .message.user .message-bubble { color: #ffffff; background: #008f87; }
+:root[data-theme="light"] #chatMessages .bot { color: #17233d; background: #e2e8f7; }
+:root[data-theme="light"] #chatMessages .user { color: #ffffff; background: #008f87; }
 
 @media (max-width: 900px) {
   .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

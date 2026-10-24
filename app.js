@@ -413,8 +413,7 @@ function toggleVoiceRecording() {
     updateVoiceStatus('Select a scenario before recording.');
     return;
   }
-  document.getElementById('sendVoiceBtn').disabled = true;
-  updateVoiceTranscript('');
+  resetVoicePractice('Starting voice recording...');
   try {
     voiceRecognition.start();
   } catch (error) {
@@ -449,18 +448,35 @@ function updateVoiceTranscript(transcript) {
   }
 }
 
+function resetVoicePractice(status = 'Ready to record') {
+  voiceTranscript = '';
+  voiceInterimTranscript = '';
+  voiceConfidence = 0;
+  voiceStartedAt = 0;
+  if (voiceRestartTimeout) {
+    window.clearTimeout(voiceRestartTimeout);
+    voiceRestartTimeout = null;
+  }
+  updateVoiceTranscript('');
+  const sendButton = document.getElementById('sendVoiceBtn');
+  if (sendButton) sendButton.disabled = true;
+  setVoiceRecordingState(false);
+  updateVoiceStatus(status);
+}
+
 function sendVoiceMessage() {
   const transcript = voiceTranscript.trim();
   if (!transcript || !currentScenario) return;
 
+  const duration = (Date.now() - voiceStartedAt) / 1000;
+  const confidence = voiceConfidence;
   appendMessage(transcript, 'user');
   window.socket.emit('voiceMessage', {
     transcript,
-    duration: (Date.now() - voiceStartedAt) / 1000,
-    confidence: voiceConfidence
+    duration,
+    confidence
   });
-  document.getElementById('sendVoiceBtn').disabled = true;
-  updateVoiceStatus('Sending voice response...');
+  resetVoicePractice('Voice response sent. Ready to record again.');
 }
 
 function selectScenario(type) {

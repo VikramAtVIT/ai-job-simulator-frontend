@@ -207,7 +207,22 @@ function updateUserStats(stats) {
     if (percentage) percentage.textContent = `${mastery}%`;
     if (progressText) progressText.textContent = `${mastery}% Mastered`;
   });
+  updateSkillDevelopment(stats);
   applyPreferences();
+}
+
+function updateSkillDevelopment(stats) {
+  const averageScore = Math.min(100, Math.max(0, Number(stats.averageScore) || 0));
+  const savedSkills = stats.skillScores || {};
+  document.querySelectorAll('[data-skill]').forEach(item => {
+    const skillName = item.dataset.skill;
+    const savedScore = Number(savedSkills[skillName]);
+    const score = Math.min(100, Math.max(0, Number.isFinite(savedScore) ? savedScore : averageScore));
+    const bar = item.querySelector('.skill-bar-inner');
+    const scoreLabel = item.querySelector('.skill-score');
+    if (bar) bar.style.width = `${score}%`;
+    if (scoreLabel) scoreLabel.textContent = `${Math.round(score)}/100`;
+  });
 }
 
 function updateDashboardSummary(stats) {

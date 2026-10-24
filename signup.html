@@ -140,6 +140,7 @@
 
                 if (data.success) {
                     localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('userId', data.userId || data.user?.id || '');
                     localStorage.setItem('currentUser', JSON.stringify(data.user || {
                         id: data.userId,
                         email: data.email,

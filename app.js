@@ -1,4 +1,3 @@
-const socket = io(window.APP_CONFIG.backendUrl);
 let currentUser = null;
 let currentScenario = null;
 let pendingScenario = null;
@@ -21,10 +20,65 @@ const scenarioLabels = {
 
 document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
+  window.socket = io(window.APP_CONFIG.backendUrl, {
+    auth: {
+      userId: localStorage.getItem('userId') || ''
+    }
+  });
+  setupSocketListeners();
   if (localStorage.getItem('authToken')) {
     router.navigate('dashboard');
   }
 });
+
+function setupSocketListeners() {
+  window.socket.on('userStats', updateUserStats);
+  window.socket.on('feedbackGenerated', data => {
+    displayFeedback(data.feedback);
+  });
+}
+
+function updateUserStats(stats) {
+  localStorage.setItem('userStats', JSON.stringify(stats));
+  const values = {
+    completedCount: stats.completedScenarios,
+    avgScore: `${stats.averageScore}%`,
+    currentLevel: stats.currentLevel,
+    totalAttempts: stats.totalAttempts
+  };
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+}
+
+function generateFeedback() {
+  if (!currentScenario) {
+    appendMessage('Select a scenario and complete a response before requesting feedback.', 'bot');
+    return;
+  }
+  window.socket.emit('generateFeedback', { scenarioType: currentScenario });
+}
+
+function displayFeedback(feedback) {
+  const values = {
+    feedbackScore: feedback.score,
+    rubricComm: `${feedback.rubrics.Communication}/25`,
+    rubricProblem: `${feedback.rubrics['Problem Solving']}/25`,
+    rubricProf: `${feedback.rubrics.Professionalism}/25`,
+    rubricAdapt: `${feedback.rubrics.Adaptability}/25`
+  };
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+  const feedbackText = document.getElementById('feedbackText');
+  if (feedbackText) {
+    feedbackText.textContent = feedback.score >= 80
+      ? 'Strong performance. Keep using specific evidence and clear next steps.'
+      : 'Good practice session. Focus on specific examples, trade-offs, and measurable outcomes.';
+  }
+}
 
 function checkAuth() {
   const token = localStorage.getItem('authToken');
@@ -44,7 +98,9 @@ function checkAuth() {
 
 function logout() {
   localStorage.removeItem('authToken');
+  localStorage.removeItem('userId');
   localStorage.removeItem('currentUser');
+  localStorage.removeItem('userStats');
   window.location.href = './login.html';
 }
 
@@ -235,7 +291,7 @@ function sendVoiceMessage() {
   if (!transcript || !currentScenario) return;
 
   appendMessage(transcript, 'user');
-  socket.emit('voiceMessage', {
+  window.socket.emit('voiceMessage', {
     transcript,
     duration: (Date.now() - voiceStartedAt) / 1000,
     confidence: voiceConfidence
@@ -257,7 +313,7 @@ function selectScenario(type) {
     scenarioLabel.textContent = `Selected: ${scenarioLabels[type] || type}`;
   }
 
-  socket.emit('selectScenario', { scenarioType: type });
+  window.socket.emit('selectScenario', { scenarioType: type });
 }
 
 function sendMessage() {
@@ -267,7 +323,7 @@ function sendMessage() {
 
   appendMessage(message, 'user');
   input.value = '';
-  socket.emit('message', { scenarioType: currentScenario, message });
+  window.socket.emit('message', { scenarioType: currentScenario, message });
 }
 
 function appendMessage(message, sender) {
@@ -280,16 +336,16 @@ function appendMessage(message, sender) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-socket.on('scenarioStarted', data => {
+window.socket.on('scenarioStarted', data => {
   currentScenario = data.type;
   appendMessage(data.intro, 'bot');
 });
 
-socket.on('aiResponse', data => appendMessage(data.message, 'bot'));
-socket.on('voiceAnalysis', data => {
+window.socket.on('aiResponse', data => appendMessage(data.message, 'bot'));
+window.socket.on('voiceAnalysis', data => {
   const analysis = document.getElementById('voiceAnalysis');
   if (!analysis) return;
   analysis.textContent = `${data.feedback} ${data.duration}s • ${data.confidence}% confidence`;
   updateVoiceStatus('Voice response sent.');
 });
-socket.on('error', message => console.error('Socket error:', message));
+window.socket.on('error', message => console.error('Socket error:', message));

@@ -37,9 +37,10 @@
         ? await res.json()
         : { message: 'The server returned an unexpected response. Please restart the backend.' };
       if (data.success) {
+        const user = data.user || { id: data.userId, email };
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userId', user.id || data.userId || '');
-        localStorage.setItem('currentUser', JSON.stringify(data.user || { id: data.userId, email }));
+        localStorage.setItem('currentUser', JSON.stringify(user));
         window.location.href = './index.html';
       } else {
         alert(data.message || data.error || 'Login failed');

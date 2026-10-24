@@ -17,7 +17,8 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .signup-container {
-            background: white;
+            background: rgba(19, 24, 52, .92);
+            color: #f6f7ff;
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -26,7 +27,7 @@
         }
         .signup-container h1 {
             text-align: center;
-            color: #333;
+            color: #f6f7ff;
             margin-bottom: 30px;
         }
         .form-group {
@@ -35,16 +36,21 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #555;
+            color: #d9def5;
             font-weight: 500;
         }
         .form-group input {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            color: #f6f7ff;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .18);
             border-radius: 5px;
             font-size: 16px;
             box-sizing: border-box;
+        }
+        .form-group input::placeholder {
+            color: #aab1d0;
         }
         .form-group input:focus {
             outline: none;
@@ -70,7 +76,7 @@
         .login-link {
             text-align: center;
             margin-top: 20px;
-            color: #666;
+            color: #c1c7e2;
         }
         .login-link a {
             color: #667eea;
@@ -78,7 +84,7 @@
             font-weight: 600;
         }
         .error-message {
-            color: #e74c3c;
+            color: #ffb4c4;
             text-align: center;
             margin-bottom: 20px;
             display: none;

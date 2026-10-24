@@ -57,8 +57,6 @@ function setPreference(name, value) {
 function applyPreferences() {
   const preferences = getPreferences();
   applyTheme(preferences.theme);
-  const recommendationSection = document.getElementById('aiRecommendationsSection');
-  if (recommendationSection) recommendationSection.hidden = !preferences.recommendations;
   document.querySelectorAll('[data-hard="true"]').forEach(element => {
     const unlocked = !latestStats || latestStats.hardScenariosUnlocked;
     element.hidden = !preferences.hardScenarios && unlocked;
@@ -91,6 +89,7 @@ function consumeGoogleRedirect() {
     localStorage.setItem('authToken', authToken);
     localStorage.setItem('userId', userId);
     localStorage.setItem('currentUser', user);
+    localStorage.removeItem('userStats');
     window.history.replaceState({}, document.title, window.location.pathname);
   } catch (error) {
     console.error('Unable to complete Google sign-in:', error);
@@ -120,23 +119,6 @@ function renderReactRecommendation(recommendation) {
   rootElement._reactRoot.render(recommendationElement);
 }
 
-function clearRecommendation() {
-  const panel = document.getElementById('react-coaching-panel');
-  if (panel && panel._reactRoot) {
-    panel._reactRoot.render(React.createElement(
-      'div',
-      { className: 'recommendation-empty' },
-      React.createElement('span', { className: 'recommendation-icon' }, '✦'),
-      React.createElement(
-        'div',
-        null,
-        React.createElement('strong', null, 'Your coaching plan will appear here'),
-        React.createElement('p', null, 'Complete a response to receive a focused skill-gap recommendation.')
-      )
-    ));
-  }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(getPreferences().theme);
   consumeGoogleRedirect();
@@ -160,19 +142,14 @@ function setupSocketListeners() {
   });
   window.socket.on('scenarioStarted', data => {
     currentScenario = data.type;
-    clearRecommendation();
     const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) chatMessages.innerHTML = '';
+    if (chatMessages) chatMessages.innerHTML = '<div id="react-coaching-panel"></div>';
     appendMessage(data.intro, 'bot');
   });
   window.socket.on('aiResponse', data => {
-    const message = data && typeof data.message === 'string' ? data.message.trim() : '';
-    if (!message) {
-      appendMessage('The coach could not complete that reply. Please send your response again.', 'bot');
-      return;
-    }
-    appendMessage(message, 'bot');
-    if (data.recommendation && typeof data.recommendation === 'string') {
+    const message = typeof data.message === 'string' ? data.message.trim() : '';
+    if (message) appendMessage(message, 'bot');
+    if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
       renderReactRecommendation(data.recommendation.trim());
     }
   });
@@ -188,21 +165,25 @@ function setupSocketListeners() {
 function updateUserStats(stats) {
   latestStats = stats;
   localStorage.setItem('userStats', JSON.stringify(stats));
+  updateAchievements(stats);
+  updateDashboardSummary(stats);
+  const completedScenarios = Number(stats.completedScenarios) || 0;
+  const averageScore = Number(stats.averageScore) || 0;
   const values = {
-    completedCount: stats.completedScenarios,
-    avgScore: `${stats.averageScore}%`,
+    completedCount: completedScenarios,
+    avgScore: `${averageScore}%`,
     currentLevel: stats.currentLevel,
     levelComment: stats.levelComment,
-    totalAttempts: stats.totalAttempts
+    totalAttempts: Number(stats.totalAttempts) || 0
   };
   Object.entries(values).forEach(([id, value]) => {
     const element = document.getElementById(id);
     if (element && value !== undefined) element.textContent = value;
   });
   const pageValues = {
-    progressAverageScore: `${stats.averageScore}%`,
-    progressCompleted: stats.completedScenarios,
-    progressAttempts: stats.totalAttempts,
+    progressAverageScore: `${averageScore}%`,
+    progressCompleted: completedScenarios,
+    progressAttempts: Number(stats.totalAttempts) || 0,
     progressLevel: stats.currentLevel,
     achievementCount: `${Math.min(stats.completedScenarios, 12)}/12`
   };
@@ -227,6 +208,93 @@ function updateUserStats(stats) {
     if (progressText) progressText.textContent = `${mastery}% Mastered`;
   });
   applyPreferences();
+}
+
+function updateDashboardSummary(stats) {
+  const completedScenarios = Number(stats.completedScenarios) || 0;
+  const totalAttempts = Number(stats.totalAttempts) || 0;
+  const averageScore = Number(stats.averageScore) || 0;
+  const getSummary = (stat, fallbackLabel) => {
+    const card = document.querySelector(`[data-stat="${stat}"]`)
+      || Array.from(document.querySelectorAll('.stat-card')).find(element => {
+        const label = element.querySelector('.stat-label');
+        return label && label.textContent.trim() === fallbackLabel;
+      });
+    return card ? card.querySelector('.stat-change') : null;
+  };
+  const completedSummary = getSummary('completed', 'Scenarios Completed');
+  const scoreSummary = getSummary('average', 'Average Score');
+  const levelSummary = getSummary('level', 'Current Level');
+  const attemptsSummary = getSummary('attempts', 'Total Attempts');
+
+  if (completedSummary) {
+    completedSummary.textContent = completedScenarios === 0
+      ? 'No scenarios completed yet'
+      : `${completedScenarios} scenario${completedScenarios === 1 ? '' : 's'} completed`;
+  }
+  if (scoreSummary) {
+    scoreSummary.textContent = completedScenarios === 0
+      ? 'Complete a scenario to get your first score'
+      : `Based on ${completedScenarios} completed scenario${completedScenarios === 1 ? '' : 's'}`;
+  }
+  if (levelSummary) {
+    levelSummary.textContent = typeof stats.levelComment === 'string' && stats.levelComment.trim()
+      ? stats.levelComment
+      : 'Start strong';
+  }
+  if (attemptsSummary) {
+    attemptsSummary.textContent = totalAttempts === 0
+      ? 'No attempts yet'
+      : `${totalAttempts} attempt${totalAttempts === 1 ? '' : 's'} recorded`;
+  }
+}
+
+function updateAchievements(stats) {
+  const progress = stats.scenarioProgress || {};
+  const scenarioProgress = Object.values(progress);
+  const bestScore = scenarioProgress.reduce(
+    (best, scenario) => Math.max(best, Number(scenario.bestScore) || 0),
+    0
+  );
+  const masteredScenarios = Object.keys(progress).filter(type => {
+    const scenario = progress[type];
+    return (Number(scenario.attempts) || 0) > 0;
+  }).length;
+  const hasRunScenario = (Number(stats.completedScenarios) || 0) > 0;
+  const attempts = Number(stats.totalAttempts) || 0;
+  const averageScore = Number(stats.averageScore) || 0;
+  const unlocked = {
+    firstStep: hasRunScenario,
+    gettingStarted: hasRunScenario && bestScore >= 80,
+    risingStar: (Number(stats.completedScenarios) || 0) >= 5,
+    dedication: attempts >= 10,
+    consistentImprover: scenarioProgress.some(scenario => (Number(scenario.attempts) || 0) >= 3),
+    master: masteredScenarios >= 6,
+    perfectScore: hasRunScenario && bestScore >= 100,
+    onFire: attempts >= 10 && averageScore >= 85,
+    champion: hasRunScenario && averageScore >= 90,
+    speedrunner: false,
+    legendary: false,
+    scholar: attempts >= 50
+  };
+  unlocked.legendary = Object.values(unlocked).every(Boolean);
+
+  const unlockedCount = Object.values(unlocked).filter(Boolean).length;
+  const achievementCount = document.getElementById('achievementCount');
+  if (achievementCount) achievementCount.textContent = `${unlockedCount}/12`;
+  const achievementProgress = document.querySelector('.achievement-progress .progress-bar-inner');
+  const progressLabel = document.querySelector('.achievement-progress > span');
+  const percentage = Math.round((unlockedCount / 12) * 100);
+  if (achievementProgress) achievementProgress.style.width = `${percentage}%`;
+  if (progressLabel) progressLabel.textContent = `${percentage}% Complete`;
+
+  document.querySelectorAll('[data-achievement]').forEach(card => {
+    const isUnlocked = Boolean(unlocked[card.dataset.achievement]);
+    card.classList.toggle('unlocked', isUnlocked);
+    card.classList.toggle('locked', !isUnlocked);
+    const date = card.querySelector('.achievement-date');
+    if (date) date.textContent = isUnlocked ? 'Unlocked' : 'Not unlocked';
+  });
 }
 
 function generateFeedback() {
@@ -314,6 +382,12 @@ const router = {
         });
         const savedStats = localStorage.getItem('userStats');
         if (savedStats) updateUserStats(JSON.parse(savedStats));
+        else if (page === 'achievements') updateAchievements({
+          completedScenarios: 0,
+          totalAttempts: 0,
+          averageScore: 0,
+          scenarioProgress: {}
+        });
       })
       .catch(err => console.error(err));
   }
@@ -433,7 +507,8 @@ function toggleVoiceRecording() {
     updateVoiceStatus('Select a scenario before recording.');
     return;
   }
-  resetVoicePractice('Starting voice recording...');
+  document.getElementById('sendVoiceBtn').disabled = true;
+  updateVoiceTranscript('');
   try {
     voiceRecognition.start();
   } catch (error) {
@@ -468,35 +543,18 @@ function updateVoiceTranscript(transcript) {
   }
 }
 
-function resetVoicePractice(status = 'Ready to record') {
-  voiceTranscript = '';
-  voiceInterimTranscript = '';
-  voiceConfidence = 0;
-  voiceStartedAt = 0;
-  if (voiceRestartTimeout) {
-    window.clearTimeout(voiceRestartTimeout);
-    voiceRestartTimeout = null;
-  }
-  updateVoiceTranscript('');
-  const sendButton = document.getElementById('sendVoiceBtn');
-  if (sendButton) sendButton.disabled = true;
-  setVoiceRecordingState(false);
-  updateVoiceStatus(status);
-}
-
 function sendVoiceMessage() {
   const transcript = voiceTranscript.trim();
   if (!transcript || !currentScenario) return;
 
-  const duration = (Date.now() - voiceStartedAt) / 1000;
-  const confidence = voiceConfidence;
   appendMessage(transcript, 'user');
   window.socket.emit('voiceMessage', {
     transcript,
-    duration,
-    confidence
+    duration: (Date.now() - voiceStartedAt) / 1000,
+    confidence: voiceConfidence
   });
-  resetVoicePractice('Voice response sent. Ready to record again.');
+  document.getElementById('sendVoiceBtn').disabled = true;
+  updateVoiceStatus('Sending voice response...');
 }
 
 function selectScenario(type) {
@@ -519,7 +577,7 @@ function selectScenario(type) {
 
   const chatMessages = document.getElementById('chatMessages');
   if (chatMessages) {
-    chatMessages.innerHTML = '<div class="chat-empty-state">Connecting to your scenario...</div>';
+    chatMessages.innerHTML = '<div class="chat-empty-state">Connecting to your scenario...</div><div id="react-coaching-panel"></div>';
   }
   window.socket.emit('selectScenario', { scenarioType: type });
 }
@@ -539,7 +597,7 @@ function appendMessage(message, sender) {
   if (!chatMessages || typeof message !== 'string' || !message.trim()) return;
   const element = document.createElement('p');
   element.className = sender;
-  element.textContent = message;
+  element.textContent = message.trim();
   chatMessages.appendChild(element);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }

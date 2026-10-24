@@ -8,25 +8,25 @@
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card" data-stat="completed">
             <div class="stat-label">Scenarios Completed</div>
-            <div class="stat-value" id="completedCount">12</div>
-            <div class="stat-change">Start your first scenario</div>
+            <div class="stat-value" id="completedCount">0</div>
+            <div class="stat-change" id="completedSummary">No scenarios completed yet</div>
         </div>
-        <div class="stat-card secondary">
+        <div class="stat-card secondary" data-stat="average">
             <div class="stat-label">Average Score</div>
-            <div class="stat-value" id="avgScore">82%</div>
-            <div class="stat-change">No scores yet</div>
+            <div class="stat-value" id="avgScore">0%</div>
+            <div class="stat-change" id="scoreSummary">Complete a scenario to get your first score</div>
         </div>
-        <div class="stat-card accent">
+        <div class="stat-card accent" data-stat="level">
             <div class="stat-label">Current Level</div>
-            <div class="stat-value" id="currentLevel">Pro</div>
-            <div class="stat-change" id="levelComment">Lead confidently</div>
+            <div class="stat-value" id="currentLevel">Starter</div>
+            <div class="stat-change" id="levelComment">Start strong</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stat="attempts">
             <div class="stat-label">Total Attempts</div>
-            <div class="stat-value" id="totalAttempts">34</div>
-            <div class="stat-change">No attempts yet</div>
+            <div class="stat-value" id="totalAttempts">0</div>
+            <div class="stat-change" id="attemptsSummary">No attempts yet</div>
         </div>
     </div>
 
@@ -39,6 +39,7 @@
 
             <div class="chat-messages" id="chatMessages">
                 <div class="chat-empty-state">Choose a scenario to receive your single role-specific opening response.</div>
+                <div id="react-coaching-panel"></div>
             </div>
 
             <div class="chat-input-area">
@@ -133,22 +134,6 @@
                     </div>
                     <div class="scenario-progress">
                         <div class="scenario-progress-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ai-recommendations-section" id="aiRecommendationsSection">
-                <div class="section-title">
-                    <span>AI Recommendations</span>
-                    <span class="recommendation-status">Updates after each response</span>
-                </div>
-                <div id="react-coaching-panel" class="recommendation-panel">
-                    <div class="recommendation-empty">
-                        <span class="recommendation-icon">✦</span>
-                        <div>
-                            <strong>Your coaching plan will appear here</strong>
-                            <p>Complete a response to receive a focused skill-gap recommendation.</p>
-                        </div>
                     </div>
                 </div>
             </div>

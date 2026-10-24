@@ -1,191 +1,295 @@
-const socket = io();
+const socket = io(window.APP_CONFIG.backendUrl);
 let currentUser = null;
 let currentScenario = null;
+let pendingScenario = null;
+let voiceRecognition = null;
+let voiceStartedAt = 0;
+let voiceTranscript = '';
+let voiceInterimTranscript = '';
+let voiceConfidence = 0;
+let voiceIsRecording = false;
+let voiceRestartTimeout = null;
 
-// Initialize on page load
+const scenarioLabels = {
+  manager_review: 'Manager performance review',
+  client_requirement: 'Client requirement discussion',
+  production_incident: 'Production incident',
+  difficult_colleague: 'Difficult colleague',
+  daily_standup: 'Daily standup update',
+  priority_conflict: 'Priority conflict resolution'
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
-  setupSocketListeners();
+  if (localStorage.getItem('authToken')) {
+    router.navigate('dashboard');
+  }
 });
 
-// Socket.io Listeners
-function setupSocketListeners() {
-  socket.on('connect', () => {
-    console.log('? Connected to server');
-  });
-
-  socket.on('scenarioStarted', (data) => {
-    console.log('?? Scenario started:', data.type);
-    currentScenario = data.type;
-    
-    // Update scenario label
-    const scenarioLabel = document.getElementById('scenarioLabel');
-    if (scenarioLabel) {
-      scenarioLabel.textContent = data.type.replace(/_/g, ' ').toUpperCase();
-    }
-    
-    // Add intro message to chat
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) {
-      const introMsg = document.createElement('div');
-      introMsg.className = 'message bot';
-      introMsg.innerHTML = `<div class="message-bubble">${data.intro}</div>`;
-      chatMessages.appendChild(introMsg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-  });
-
-  socket.on('aiResponse', (data) => {
-    console.log('?? AI Response:', data.message);
-    
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) {
-      const msg = document.createElement('div');
-      msg.className = 'message bot';
-      msg.innerHTML = `<div class="message-bubble">${data.message}</div>`;
-      chatMessages.appendChild(msg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-  });
-
-  socket.on('feedbackGenerated', (data) => {
-    console.log('?? Feedback:', data.feedback);
-    displayFeedback(data.feedback);
-  });
-
-  socket.on('error', (message) => {
-    console.error('? Socket error:', message);
-    alert('Error: ' + message);
-  });
-}
-
-// Start Scenario Function
-function selectScenario(type) {
-  console.log('?? Starting scenario:', type);
-  
-  if (!type) {
-    console.error('? Scenario type is undefined!');
-    alert('Error: Scenario type not specified');
-    return;
-  }
-
-  currentScenario = type;
-  console.log('?? Emitting selectScenario with:', { scenarioType: type });
-  
-  socket.emit('selectScenario', {
-    scenarioType: type
-  });
-}
-
-// Send Message Function
-function sendMessage() {
-  const input = document.getElementById('chatInput');
-  const message = input.value.trim();
-
-  if (!message) {
-    console.warn('?? Empty message');
-    return;
-  }
-
-  console.log('?? Sending message:', message);
-  console.log('Current scenario:', currentScenario);
-
-  // Display user message
-  const chatMessages = document.getElementById('chatMessages');
-  if (chatMessages) {
-    const msg = document.createElement('div');
-    msg.className = 'message user';
-    msg.innerHTML = `<div class="message-bubble">${message}</div>`;
-    chatMessages.appendChild(msg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  } else {
-    console.error('? chatMessages div not found!');
-  }
-
-  // Send to server
-  socket.emit('message', {
-    userId: currentUser?.id || socket.id,
-    scenarioType: currentScenario,
-    message: message
-  });
-
-  input.value = '';
-  input.focus();
-}
-
-// Feedback Display
-function displayFeedback(feedback) {
-  console.log('Displaying feedback:', feedback);
-  
-  const scoreElement = document.getElementById('feedbackScore');
-  if (scoreElement) scoreElement.textContent = feedback.score;
-
-  const commElement = document.getElementById('rubricComm');
-  if (commElement) commElement.textContent = `${feedback.rubrics['Communication']}/25`;
-
-  const problemElement = document.getElementById('rubricProblem');
-  if (problemElement) problemElement.textContent = `${feedback.rubrics['Problem Solving']}/25`;
-
-  const profElement = document.getElementById('rubricProf');
-  if (profElement) profElement.textContent = `${feedback.rubrics['Professionalism']}/25`;
-
-  const adaptElement = document.getElementById('rubricAdapt');
-  if (adaptElement) adaptElement.textContent = `${feedback.rubrics['Adaptability']}/25`;
-
-  const feedbackText = document.getElementById('feedbackText');
-  if (feedbackText) {
-    if (feedback.score >= 80) {
-      feedbackText.textContent = '?? Excellent performance! You demonstrated strong communication and problem-solving skills.';
-    } else if (feedback.score >= 60) {
-      feedbackText.textContent = '?? Good effort! Work on expanding your responses and considering stakeholder impacts.';
-    } else {
-      feedbackText.textContent = '?? Keep practicing! Focus on asking clarifying questions and providing specific solutions.';
-    }
-  }
-}
-
-// Generate Feedback
-function generateFeedback() {
-  console.log('?? Requesting feedback...');
-  socket.emit('generateFeedback', {
-    userId: currentUser?.id || socket.id,
-    scenarioType: currentScenario
-  });
-}
-
-// Handle chat input keypress
-function handleChatKeypress(event) {
-  if (event.key === 'Enter') {
-    sendMessage();
-  }
-}
-
-// Authentication
 function checkAuth() {
   const token = localStorage.getItem('authToken');
-  if (!token) {
-    window.location.href = '/login.html';
-  } else {
-    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    currentUser = user;
+  if (!token && !window.location.href.includes('login')) {
+    window.location.href = './login.html';
   }
-}
-
-// Utility Functions
-function showNotifications() {
-  alert('No new notifications');
-}
-
-function toggleProfileMenu() {
-  alert('Profile menu');
-}
-
-function toggleVoiceRecording() {
-  alert('Voice recording not yet implemented');
+  if (token) {
+    try {
+      currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    } catch (error) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      window.location.href = './login.html';
+    }
+  }
 }
 
 function logout() {
   localStorage.removeItem('authToken');
   localStorage.removeItem('currentUser');
-  window.location.href = '/login.html';
+  window.location.href = './login.html';
 }
+
+function handleLogout() {
+  logout();
+}
+
+function startScenario(type) {
+  pendingScenario = type;
+  router.navigate('dashboard');
+}
+
+function showNotifications() {
+  window.alert('You are all caught up.');
+}
+
+function toggleProfileMenu() {
+  window.alert(`Signed in as ${currentUser && currentUser.email ? currentUser.email : 'User'}`);
+}
+
+const router = {
+  navigate(page) {
+    fetch(`./pages/${page}.html`)
+      .then(r => {
+        if (!r.ok) throw new Error(`Unable to load ${page}`);
+        return r.text();
+      })
+      .then(html => {
+        document.getElementById('main-content').innerHTML = html;
+        attachPageHandlers();
+      })
+      .catch(err => console.error(err));
+  }
+};
+
+function attachPageHandlers() {
+  const chatMessages = document.getElementById('chatMessages');
+
+  document.querySelectorAll('[data-scenario]').forEach(button => {
+    button.addEventListener('click', () => selectScenario(button.dataset.scenario));
+  });
+
+  if (chatMessages) {
+    const scenarioToSelect = pendingScenario || currentScenario;
+    pendingScenario = null;
+    if (scenarioToSelect) selectScenario(scenarioToSelect);
+
+    const input = document.getElementById('chatInput');
+    if (input) {
+      input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') sendMessage();
+      });
+    }
+    initializeVoiceChat();
+  }
+}
+
+function initializeVoiceChat() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const voiceButton = document.getElementById('voiceBtn');
+  if (!voiceButton || !SpeechRecognition) {
+    updateVoiceStatus('Voice input is not supported in this browser.');
+    if (voiceButton) voiceButton.disabled = true;
+    return;
+  }
+
+  voiceRecognition = new SpeechRecognition();
+  voiceRecognition.continuous = true;
+  voiceRecognition.interimResults = true;
+  voiceRecognition.lang = 'en-US';
+  voiceRecognition.onstart = () => {
+    if (!voiceIsRecording) {
+      voiceStartedAt = Date.now();
+      voiceTranscript = '';
+      voiceInterimTranscript = '';
+      voiceConfidence = 0;
+    }
+    voiceIsRecording = true;
+    setVoiceRecordingState(true);
+  };
+  voiceRecognition.onresult = event => {
+    let interim = '';
+    for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      const result = event.results[index];
+      if (result.isFinal) {
+        voiceTranscript += `${result[0].transcript} `;
+        voiceConfidence = Math.max(voiceConfidence, Math.round((result[0].confidence || 0) * 100));
+      } else {
+        interim += result[0].transcript;
+      }
+    }
+    voiceInterimTranscript = interim;
+    updateVoiceTranscript(`${voiceTranscript}${voiceInterimTranscript}`.trim());
+  };
+  voiceRecognition.onerror = event => {
+    if (event.error === 'no-speech' && voiceIsRecording) {
+      updateVoiceStatus('Still listening... please continue speaking.');
+      return;
+    }
+
+    voiceIsRecording = false;
+    setVoiceRecordingState(false);
+    updateVoiceStatus(event.error === 'not-allowed'
+      ? 'Microphone permission was denied. Allow microphone access and try again.'
+      : `Voice input error: ${event.error}`);
+  };
+  voiceRecognition.onend = () => {
+    if (voiceIsRecording) {
+      updateVoiceStatus('Still listening... please continue speaking.');
+      voiceRestartTimeout = window.setTimeout(() => {
+        if (!voiceIsRecording) return;
+        try {
+          voiceRecognition.start();
+        } catch (error) {
+          if (error.name !== 'InvalidStateError') {
+            voiceIsRecording = false;
+            setVoiceRecordingState(false);
+            updateVoiceStatus('Voice input could not be restarted. Try again.');
+          }
+        }
+      }, 250);
+      return;
+    }
+
+    const completedTranscript = `${voiceTranscript} ${voiceInterimTranscript}`.trim();
+    voiceTranscript = completedTranscript;
+    voiceInterimTranscript = '';
+    updateVoiceTranscript(completedTranscript);
+    if (completedTranscript) {
+      document.getElementById('sendVoiceBtn').disabled = false;
+      updateVoiceStatus('Transcript ready to send.');
+    } else {
+      updateVoiceStatus('No speech detected.');
+    }
+  };
+}
+
+function toggleVoiceRecording() {
+  if (!voiceRecognition) return;
+  if (document.getElementById('voiceBtn').getAttribute('aria-pressed') === 'true') {
+    voiceIsRecording = false;
+    if (voiceRestartTimeout) window.clearTimeout(voiceRestartTimeout);
+    voiceRecognition.stop();
+    return;
+  }
+  if (!currentScenario) {
+    updateVoiceStatus('Select a scenario before recording.');
+    return;
+  }
+  document.getElementById('sendVoiceBtn').disabled = true;
+  updateVoiceTranscript('');
+  try {
+    voiceRecognition.start();
+  } catch (error) {
+    if (error.name === 'InvalidStateError') {
+      updateVoiceStatus('Voice input is already starting. Please wait.');
+      return;
+    }
+    updateVoiceStatus('Unable to start voice input. Check microphone permissions.');
+  }
+}
+
+function setVoiceRecordingState(isRecording) {
+  const button = document.getElementById('voiceBtn');
+  const label = document.getElementById('voiceButtonLabel');
+  if (!button || !label) return;
+  button.setAttribute('aria-pressed', String(isRecording));
+  button.classList.toggle('recording', isRecording);
+  label.textContent = isRecording ? 'Stop recording' : 'Start recording';
+  updateVoiceStatus(isRecording ? 'Listening...' : 'Ready');
+}
+
+function updateVoiceStatus(message) {
+  const status = document.getElementById('voiceStatus');
+  if (status) status.textContent = message;
+}
+
+function updateVoiceTranscript(transcript) {
+  const element = document.getElementById('voiceTranscript');
+  if (element) {
+    element.textContent = transcript || 'Your transcript will appear here.';
+    element.classList.toggle('has-transcript', Boolean(transcript));
+  }
+}
+
+function sendVoiceMessage() {
+  const transcript = voiceTranscript.trim();
+  if (!transcript || !currentScenario) return;
+
+  appendMessage(transcript, 'user');
+  socket.emit('voiceMessage', {
+    transcript,
+    duration: (Date.now() - voiceStartedAt) / 1000,
+    confidence: voiceConfidence
+  });
+  document.getElementById('sendVoiceBtn').disabled = true;
+  updateVoiceStatus('Sending voice response...');
+}
+
+function selectScenario(type) {
+  currentScenario = type;
+  document.querySelectorAll('[data-scenario]').forEach(button => {
+    const isSelected = button.dataset.scenario === type;
+    button.classList.toggle('selected', isSelected);
+    button.setAttribute('aria-pressed', String(isSelected));
+  });
+
+  const scenarioLabel = document.getElementById('selectedScenario');
+  if (scenarioLabel) {
+    scenarioLabel.textContent = `Selected: ${scenarioLabels[type] || type}`;
+  }
+
+  socket.emit('selectScenario', { scenarioType: type });
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const message = input && input.value.trim();
+  if (!message || !currentScenario) return;
+
+  appendMessage(message, 'user');
+  input.value = '';
+  socket.emit('message', { scenarioType: currentScenario, message });
+}
+
+function appendMessage(message, sender) {
+  const chatMessages = document.getElementById('chatMessages');
+  if (!chatMessages) return;
+  const element = document.createElement('p');
+  element.className = sender;
+  element.textContent = message;
+  chatMessages.appendChild(element);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+socket.on('scenarioStarted', data => {
+  currentScenario = data.type;
+  appendMessage(data.intro, 'bot');
+});
+
+socket.on('aiResponse', data => appendMessage(data.message, 'bot'));
+socket.on('voiceAnalysis', data => {
+  const analysis = document.getElementById('voiceAnalysis');
+  if (!analysis) return;
+  analysis.textContent = `${data.feedback} ${data.duration}s • ${data.confidence}% confidence`;
+  updateVoiceStatus('Voice response sent.');
+});
+socket.on('error', message => console.error('Socket error:', message));

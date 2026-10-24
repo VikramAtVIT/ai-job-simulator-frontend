@@ -7,357 +7,149 @@
     <link rel="stylesheet" href="styles.css">
     <script src="config.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --accent: #06d6a0;
-            --bg: #f5f7fa;
-            --text: #333333;
-            --danger: #f56565;
-            --success: #28a745;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
         .signup-container {
-            width: 100%;
-            max-width: 450px;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            animation: slideUp 0.5s ease-out;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
         }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .signup-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            padding: 30px 20px;
+        .signup-container h1 {
             text-align: center;
-            color: white;
+            color: #333;
+            margin-bottom: 30px;
         }
-
-        .signup-header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-            font-weight: 700;
-        }
-
-        .signup-header p {
-            font-size: 13px;
-            opacity: 0.9;
-        }
-
-        .signup-form {
-            padding: 35px;
-        }
-
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-
         .form-group label {
             display: block;
-            margin-bottom: 6px;
-            color: var(--text);
-            font-weight: 600;
-            font-size: 13px;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
         }
-
         .form-group input {
             width: 100%;
-            padding: 11px 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 13px;
-            transition: all 0.3s ease;
-            font-family: inherit;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
         }
-
         .form-group input:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
         }
-
-        .password-strength {
-            height: 4px;
-            background: #e0e0e0;
-            border-radius: 2px;
-            margin-top: 6px;
-            overflow: hidden;
-        }
-
-        .password-strength-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--danger);
-            transition: width 0.3s ease;
-        }
-
-        .password-strength-bar.weak {
-            background: var(--danger);
-            width: 33%;
-        }
-
-        .password-strength-bar.medium {
-            background: #ffc107;
-            width: 66%;
-        }
-
-        .password-strength-bar.strong {
-            background: var(--success);
-            width: 100%;
-        }
-
-        .error-message {
-            background: #fee;
-            color: var(--danger);
-            padding: 11px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            display: none;
-            font-size: 12px;
-            border-left: 4px solid var(--danger);
-        }
-
-        .terms {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .terms input {
-            margin-right: 6px;
-        }
-
-        .terms a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .signup-btn {
+        .btn-signup {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 5px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 15px;
+            margin-top: 10px;
         }
-
-        .signup-btn:hover {
+        .btn-signup:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-
         .login-link {
             text-align: center;
+            margin-top: 20px;
             color: #666;
-            font-size: 13px;
         }
-
         .login-link a {
-            color: var(--primary);
+            color: #667eea;
             text-decoration: none;
             font-weight: 600;
         }
-
-        @media (max-width: 480px) {
-            .signup-container {
-                max-width: 100%;
-            }
-
-            .signup-form {
-                padding: 25px 20px;
-            }
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            margin-bottom: 20px;
+            display: none;
         }
     </style>
 </head>
-<body>
-    <div class="signup-container">
-        <div class="signup-header">
-            <h1>Create Account</h1>
-            <p>Join AI Job Simulator today</p>
-        </div>
-
-        <div class="signup-form">
-            <div class="error-message" id="errorMessage"></div>
-
-            <form id="signupForm" onsubmit="handleSignup(event)">
-                <div class="form-group">
-                    <label for="fullname">Full Name</label>
-                    <input 
-                        type="text" 
-                        id="fullname" 
-                        name="fullname" 
-                        placeholder="John Doe" 
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        placeholder="you@example.com" 
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        placeholder="Min 8 characters" 
-                        oninput="checkPasswordStrength()"
-                        required
-                    >
-                    <div class="password-strength">
-                        <div class="password-strength-bar" id="strengthBar"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <input 
-                        type="password" 
-                        id="confirmPassword" 
-                        name="confirmPassword" 
-                        placeholder="Confirm password" 
-                        required
-                    >
-                </div>
-
-                <div class="terms">
-                    <label>
-                        <input type="checkbox" name="terms" required>
-                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-                    </label>
-                </div>
-
-                <button type="submit" class="signup-btn">Create Account</button>
-            </form>
-
-            <div class="login-link">
-                Already have an account? <a href="login.html">Sign in here</a>
+<body class="auth-page">
+    <div class="signup-container auth-card">
+        <h1>Join AI Job Simulator</h1>
+        <div class="error-message" id="errorMessage"></div>
+        <form id="signupForm" onsubmit="handleSignup(event)">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" required placeholder="Your name">
             </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="At least 6 characters">
+            </div>
+            <button type="submit" class="btn-signup">Sign Up</button>
+        </form>
+        <div class="login-link">
+            Already have an account? <a href="login.html">Login</a>
         </div>
     </div>
 
     <script>
-        function checkPasswordStrength() {
-            const password = document.getElementById('password').value;
-            const strengthBar = document.getElementById('strengthBar');
+        const API_URL = window.APP_CONFIG.backendUrl;
 
-            if (password.length === 0) {
-                strengthBar.className = 'password-strength-bar';
-            } else if (password.length < 8) {
-                strengthBar.className = 'password-strength-bar weak';
-            } else if (password.length < 12) {
-                strengthBar.className = 'password-strength-bar medium';
-            } else {
-                strengthBar.className = 'password-strength-bar strong';
-            }
-        }
-
-        function handleSignup(event) {
+        async function handleSignup(event) {
             event.preventDefault();
 
-            const fullname = document.getElementById('fullname').value.trim();
-            const email = document.getElementById('email').value.trim();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const terms = document.querySelector('input[name="terms"]').checked;
+            const errorMessage = document.getElementById('errorMessage');
 
-            if (fullname.length < 2) {
-                showError('Please enter your full name');
-                return;
-            }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showError('Please enter a valid email address');
-                return;
-            }
-            if (!terms) {
-                showError('You must accept the terms and privacy policy');
-                return;
-            }
+            try {
+                const response = await fetch(`${API_URL}/api/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
 
-            if (password !== confirmPassword) {
-                showError('Passwords do not match');
-                return;
-            }
+                const contentType = response.headers.get('content-type') || '';
+                const data = contentType.includes('application/json')
+                    ? await response.json()
+                    : { message: 'The server returned an unexpected response. Please restart the backend.' };
 
-            if (password.length < 8) {
-                showError('Password must be at least 8 characters');
-                return;
-            }
-
-            fetch(`${window.APP_CONFIG.backendUrl}/api/auth/signup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: fullname, email, password })
-            })
-                .then(async response => {
-                    const contentType = response.headers.get('content-type') || '';
-                    const data = contentType.includes('application/json')
-                        ? await response.json()
-                        : { error: 'The server returned an unexpected response. Please restart the backend.' };
-                    return { ok: response.ok, data };
-                })
-                .then(({ ok, data }) => {
-                    if (!ok || !data.success || !data.token) {
-                        throw new Error(data.error || data.message || 'Signup failed');
-                    }
-                    const user = data.user || {
-                        email: data.email || email,
-                        name: data.name || fullname
-                    };
+                if (data.success) {
                     localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('userEmail', user.email);
-                    localStorage.setItem('userName', user.name);
-                    window.location.href = 'index.html';
-                })
-                .catch(error => showError(error.message));
-        }
+                    localStorage.setItem('currentUser', JSON.stringify(data.user || {
+                        id: data.userId,
+                        email: data.email,
+                        name
+                    }));
 
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+                    window.location.href = './index.html';
+                } else {
+                    errorMessage.textContent = data.message || 'Sign up failed';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Signup error:', err);
+                errorMessage.textContent = 'Network error: ' + err.message;
+                errorMessage.style.display = 'block';
+            }
         }
     </script>
 </body>

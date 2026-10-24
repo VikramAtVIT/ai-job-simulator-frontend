@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - AI Job Simulator</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
     <style>
         * {
             margin: 0;
@@ -325,7 +326,7 @@
                 return;
             }
 
-            fetch('/api/auth/signup', {
+            fetch(`${window.APP_CONFIG.backendUrl}/api/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: fullname, email, password })

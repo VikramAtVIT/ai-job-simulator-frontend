@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Job Simulator - Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
         * {
@@ -1056,7 +1057,7 @@
         }
 
         function initializeSocket() {
-            socket = io('http://localhost:3000', {
+            socket = io(window.APP_CONFIG.backendUrl, {
                 reconnection: true,
                 reconnectionDelay: 1000,
                 reconnectionDelayMax: 5000,
@@ -1078,6 +1079,15 @@
             socket.on('aiResponse', (data) => {
                 if (data && data.message) {
                     displayMessage(data.message, 'bot');
+                }
+            });
+
+            socket.on('scenarioStarted', (data) => {
+                if (data && data.type) {
+                    currentScenario = data.type;
+                }
+                if (data && data.intro) {
+                    displayMessage(data.intro, 'bot');
                 }
             });
 
@@ -1214,9 +1224,10 @@
                 const base64Audio = reader.result.split(',')[1];
                 
                 if (socket && socket.connected) {
-                    socket.emit('voice', {
-                        audio: base64Audio,
-                        duration: Math.floor((Date.now() - recordingStartTime) / 1000)
+                    socket.emit('voiceMessage', {
+                        transcript: 'Voice response recorded. Please evaluate my spoken response.',
+                        duration: Math.floor((Date.now() - recordingStartTime) / 1000),
+                        confidence: 1
                     });
                 }
 

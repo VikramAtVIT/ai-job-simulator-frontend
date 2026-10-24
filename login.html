@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - AI Job Simulator</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
     <style>
         * {
             margin: 0;
@@ -426,7 +427,7 @@
             loginBtn.innerHTML = '<span class="loading-spinner"></span>Signing in...';
             loginBtn.disabled = true;
 
-            fetch('/api/auth/login', {
+            fetch(`${window.APP_CONFIG.backendUrl}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })

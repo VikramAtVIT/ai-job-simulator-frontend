@@ -127,10 +127,13 @@ function setupSocketListeners() {
   window.socket.on('userStats', updateUserStats);
   window.socket.on('feedbackGenerated', data => {
     displayFeedback(data.feedback);
-    updateRecommendation(
-      data.recommendation
-      || (data.feedback && data.feedback.recommendation)
-    );
+    if (data.recommendation) {
+      updateRecommendation(data.recommendation);
+    } else if (typeof data.recommendationError === 'string') {
+      showRecommendationStatus(data.recommendationError);
+    } else {
+      showRecommendationStatus('No skill-gap analysis was returned. Try generating feedback again.');
+    }
   });
   window.socket.on('scenarioStarted', data => {
     currentScenario = data.type;
@@ -141,13 +144,11 @@ function setupSocketListeners() {
   window.socket.on('aiResponse', data => {
     const message = typeof data.message === 'string' ? data.message.trim() : '';
     if (message) appendMessage(message, 'bot');
-    updateRecommendation(data.recommendation || message);
   });
   window.socket.on('voiceAnalysis', data => {
     const feedback = typeof data.feedback === 'string' ? data.feedback.trim() : '';
     if (feedback) {
       appendMessage(`${feedback} (${data.duration}s • ${data.confidence}% confidence)`, 'bot');
-      updateRecommendation(feedback);
     }
     if (!voiceIsRecording && !voiceTranscript) {
       updateVoiceStatus('Response analyzed. Record another when ready.');
@@ -165,14 +166,24 @@ function updateBackendStatus(state, label) {
 }
 
 function updateRecommendation(recommendation) {
-  const text = typeof recommendation === 'string' ? recommendation.trim() : '';
-  if (!text) return;
-  latestRecommendation = text;
+  if (!recommendation || typeof recommendation !== 'object') return;
+  const skill = typeof recommendation.skill === 'string' ? recommendation.skill.trim() : '';
+  const evidence = typeof recommendation.evidence === 'string' ? recommendation.evidence.trim() : '';
+  const nextStep = typeof recommendation.nextStep === 'string' ? recommendation.nextStep.trim() : '';
+  if (!skill || !evidence || !nextStep) return;
+  latestRecommendation = `${skill}: ${evidence} Next practice: ${nextStep}`;
   const element = document.getElementById('aiRecommendation');
   if (element) {
     element.textContent = latestRecommendation;
     element.classList.remove('recommendation-empty');
   }
+}
+
+function showRecommendationStatus(message) {
+  const element = document.getElementById('aiRecommendation');
+  if (!element) return;
+  element.textContent = message;
+  element.classList.add('recommendation-empty');
 }
 
 function updateUserStats(stats) {
@@ -345,6 +356,7 @@ function generateFeedback() {
     appendMessage('Select a scenario and complete a response before requesting feedback.', 'bot');
     return;
   }
+  showRecommendationStatus('Analyzing your practice to find one skill to focus on next...');
   window.socket.emit('generateFeedback', { scenarioType: currentScenario });
 }
 

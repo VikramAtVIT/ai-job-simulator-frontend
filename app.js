@@ -57,6 +57,8 @@ function setPreference(name, value) {
 function applyPreferences() {
   const preferences = getPreferences();
   applyTheme(preferences.theme);
+  const recommendationSection = document.getElementById('aiRecommendationsSection');
+  if (recommendationSection) recommendationSection.hidden = !preferences.recommendations;
   document.querySelectorAll('[data-hard="true"]').forEach(element => {
     const unlocked = !latestStats || latestStats.hardScenariosUnlocked;
     element.hidden = !preferences.hardScenarios && unlocked;
@@ -118,6 +120,23 @@ function renderReactRecommendation(recommendation) {
   rootElement._reactRoot.render(recommendationElement);
 }
 
+function clearRecommendation() {
+  const panel = document.getElementById('react-coaching-panel');
+  if (panel && panel._reactRoot) {
+    panel._reactRoot.render(React.createElement(
+      'div',
+      { className: 'recommendation-empty' },
+      React.createElement('span', { className: 'recommendation-icon' }, '✦'),
+      React.createElement(
+        'div',
+        null,
+        React.createElement('strong', null, 'Your coaching plan will appear here'),
+        React.createElement('p', null, 'Complete a response to receive a focused skill-gap recommendation.')
+      )
+    ));
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(getPreferences().theme);
   consumeGoogleRedirect();
@@ -141,8 +160,9 @@ function setupSocketListeners() {
   });
   window.socket.on('scenarioStarted', data => {
     currentScenario = data.type;
+    clearRecommendation();
     const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) chatMessages.innerHTML = '<div id="react-coaching-panel"></div>';
+    if (chatMessages) chatMessages.innerHTML = '';
     appendMessage(data.intro, 'bot');
   });
   window.socket.on('aiResponse', data => {
@@ -499,7 +519,7 @@ function selectScenario(type) {
 
   const chatMessages = document.getElementById('chatMessages');
   if (chatMessages) {
-    chatMessages.innerHTML = '<div class="chat-empty-state">Connecting to your scenario...</div><div id="react-coaching-panel"></div>';
+    chatMessages.innerHTML = '<div class="chat-empty-state">Connecting to your scenario...</div>';
   }
   window.socket.emit('selectScenario', { scenarioType: type });
 }

@@ -39,7 +39,6 @@
 
             <div class="chat-messages" id="chatMessages">
                 <div class="chat-empty-state">Choose a scenario to receive your single role-specific opening response.</div>
-                <div id="react-coaching-panel"></div>
             </div>
 
             <div class="chat-input-area">
@@ -134,6 +133,22 @@
                     </div>
                     <div class="scenario-progress">
                         <div class="scenario-progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-recommendations-section" id="aiRecommendationsSection">
+                <div class="section-title">
+                    <span>AI Recommendations</span>
+                    <span class="recommendation-status">Updates after each response</span>
+                </div>
+                <div id="react-coaching-panel" class="recommendation-panel">
+                    <div class="recommendation-empty">
+                        <span class="recommendation-icon">✦</span>
+                        <div>
+                            <strong>Your coaching plan will appear here</strong>
+                            <p>Complete a response to receive a focused skill-gap recommendation.</p>
+                        </div>
                     </div>
                 </div>
             </div>

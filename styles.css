@@ -397,6 +397,62 @@ main {
   background: rgba(8,11,27,.72);
   content: "LOCKED • ADVANCED LEVEL";
 }
+.ai-recommendations-section {
+  margin-bottom: 18px;
+  padding: 20px 22px;
+  background: linear-gradient(135deg, rgba(39,215,197,.11), rgba(124,108,255,.12));
+  border: 1px solid rgba(39,215,197,.28);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+.ai-recommendations-section .section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.recommendation-status {
+  color: var(--secondary);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.recommendation-panel .react-recommendation {
+  margin-top: 0;
+  background: rgba(255,255,255,.08);
+  border-color: rgba(39,215,197,.32);
+}
+.recommendation-empty {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 58px;
+  color: var(--muted);
+}
+.recommendation-empty strong {
+  display: block;
+  color: var(--text);
+  font-size: .88rem;
+}
+.recommendation-empty p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: .8rem;
+  line-height: 1.45;
+}
+.recommendation-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  color: var(--secondary);
+  background: rgba(39,215,197,.14);
+  border: 1px solid rgba(39,215,197,.3);
+  border-radius: 12px;
+}
 .scenario-card.locked-scenario { position: relative; overflow: hidden; opacity: .72; }
 .scenario-card.locked-scenario::after {
   position: absolute;
@@ -478,6 +534,7 @@ main {
 :root[data-theme="light"] .message.user .message-bubble { color: #ffffff; background: #008f87; }
 :root[data-theme="light"] #chatMessages .bot { color: #17233d; background: #e2e8f7; }
 :root[data-theme="light"] #chatMessages .user { color: #ffffff; background: #008f87; }
+:root[data-theme="light"] .ai-recommendations-section { background: linear-gradient(135deg, #e1f5f2, #ecebff); }
 
 @media (max-width: 900px) {
   .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

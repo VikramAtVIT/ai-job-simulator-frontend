@@ -60,15 +60,22 @@ function applyPreferences() {
   const preferences = getPreferences();
   applyTheme(preferences.theme);
   document.querySelectorAll('[data-hard="true"]').forEach(element => {
-    const unlocked = !latestStats || latestStats.hardScenariosUnlocked;
+    const unlocked = Boolean(latestStats && latestStats.hardScenariosUnlocked);
     element.hidden = !preferences.hardScenarios && unlocked;
     element.classList.toggle('locked-scenario', !unlocked);
     element.setAttribute('aria-disabled', String(!unlocked));
+    if (element.matches('.scenario-card')) {
+      const startButton = element.querySelector('button');
+      if (startButton) {
+        startButton.disabled = !unlocked;
+        startButton.textContent = unlocked ? '▶ Start scenario' : '🔒 Unlock at Advanced';
+      }
+    }
   });
   document.querySelectorAll('.difficulty.hard').forEach(element => {
     const card = element.closest('.scenario-card');
     if (card) {
-      const unlocked = !latestStats || latestStats.hardScenariosUnlocked;
+      const unlocked = Boolean(latestStats && latestStats.hardScenariosUnlocked);
       card.hidden = !preferences.hardScenarios && unlocked;
       card.classList.toggle('locked-scenario', !unlocked);
     }
@@ -96,14 +103,153 @@ function consumeGoogleRedirect() {
   }
 }
 
-const scenarioLabels = {
-  manager_review: 'Manager performance review',
-  client_requirement: 'Client requirement discussion',
-  production_incident: 'Production incident',
-  difficult_colleague: 'Difficult colleague',
-  daily_standup: 'Daily standup update',
-  priority_conflict: 'Priority conflict resolution'
-};
+const scenarioCatalog = [
+  { type: 'manager_review', name: 'Manager performance review', shortName: 'Manager review', icon: '👔', difficulty: 'easy', category: 'Career growth', objective: 'Share achievements with evidence, reflect on challenges, and agree on a measurable growth goal.' },
+  { type: 'daily_standup', name: 'Daily standup update', shortName: 'Daily standup', icon: '☀️', difficulty: 'easy', category: 'Communication & collaboration', objective: 'Give a concise update, identify blockers, and commit to a specific next step.' },
+  { type: 'time_management', name: 'Time management & delivery planning', icon: '🗓️', difficulty: 'easy', category: 'Leadership & planning', objective: 'Plan competing deliverables realistically, account for capacity, and reset expectations early.' },
+  { type: 'inclusive_meeting', name: 'Inclusive meeting facilitation', icon: '🫶', difficulty: 'easy', category: 'Communication & collaboration', objective: 'Balance participation, invite accessible input, and leave the group with clear decisions.' },
+  { type: 'client_requirement', name: 'Client requirement discussion', icon: '💼', difficulty: 'medium', category: 'Product & clients', objective: 'Clarify user needs and constraints, then propose a scoped solution with acceptance criteria.' },
+  { type: 'code_review', name: 'Code review & maintainability', icon: '🧩', difficulty: 'medium', category: 'Software engineering', objective: 'Review correctness, edge cases, tests, and maintainability while giving actionable feedback.' },
+  { type: 'data_analysis', name: 'Data analysis & experiment design', icon: '📊', difficulty: 'medium', category: 'Data & decision-making', objective: 'Choose meaningful metrics, design a fair comparison, and communicate uncertainty.' },
+  { type: 'debugging', name: 'Debugging & root-cause analysis', icon: '🔎', difficulty: 'medium', category: 'Software engineering', objective: 'Investigate an intermittent defect through testable hypotheses and evidence.' },
+  { type: 'product_tradeoff', name: 'Product discovery & trade-offs', icon: '🧭', difficulty: 'medium', category: 'Product & clients', objective: 'Uncover the user need behind a request and prioritize a measurable first release.' },
+  { type: 'salary_negotiation', name: 'Salary negotiation', icon: '🤝', difficulty: 'medium', category: 'Career growth', objective: 'Advocate for your value with evidence while exploring compensation and total rewards.' },
+  { type: 'delegation', name: 'Delegation & team leadership', icon: '🧑‍🤝‍🧑', difficulty: 'medium', category: 'Leadership & planning', objective: 'Assign clear outcomes, support autonomy, and balance workload across a team.' },
+  { type: 'feedback_conversation', name: 'Giving constructive feedback', icon: '💬', difficulty: 'medium', category: 'Communication & collaboration', objective: 'Discuss observable behavior with empathy and agree on a practical improvement.' },
+  { type: 'production_incident', name: 'Production incident response', icon: '🚨', difficulty: 'hard', category: 'Reliability & operations', objective: 'Triage customer impact, stabilize service safely, and coordinate incident communication.' },
+  { type: 'difficult_colleague', name: 'Difficult colleague conversation', icon: '⚖️', difficulty: 'hard', category: 'Communication & collaboration', objective: 'Resolve a disagreement using empathy, evidence, and shared success measures.' },
+  { type: 'priority_conflict', name: 'Priority conflict resolution', icon: '⏱️', difficulty: 'hard', category: 'Leadership & planning', objective: 'Compare impact and dependencies, explain trade-offs, and align stakeholders.' },
+  { type: 'system_design', name: 'Scalable system design', icon: '🏗️', difficulty: 'hard', category: 'Software engineering', objective: 'Design for realistic workloads, reliability, failure modes, and explicit trade-offs.' },
+  { type: 'security_review', name: 'Security review & threat modeling', icon: '🛡️', difficulty: 'hard', category: 'Security & privacy', objective: 'Identify trust boundaries, abuse cases, sensitive data, and proportionate mitigations.' },
+  { type: 'privacy_decision', name: 'Privacy & data handling', icon: '🔐', difficulty: 'hard', category: 'Security & privacy', objective: 'Balance product needs with consent, data minimization, access controls, and retention.' },
+  { type: 'customer_escalation', name: 'Customer escalation', icon: '📣', difficulty: 'hard', category: 'Product & clients', objective: 'Acknowledge customer impact, communicate known facts, and make reliable commitments.' },
+  { type: 'ethical_dilemma', name: 'Ethical decision-making', icon: '🧠', difficulty: 'hard', category: 'Ethics & judgment', objective: 'Evaluate stakeholder impact and respond to a potential ethical issue responsibly.' },
+  { type: 'change_management', name: 'Change management & stakeholder alignment', icon: '🔄', difficulty: 'hard', category: 'Leadership & planning', objective: 'Build alignment for a disruptive change through pilots, support, and transparent measures.' }
+];
+const scenarioByType = Object.fromEntries(scenarioCatalog.map(scenario => [scenario.type, scenario]));
+const scenarioLabels = Object.fromEntries(scenarioCatalog.map(scenario => [scenario.type, scenario.name]));
+const levelCatalog = [
+  { name: 'Starter', comment: 'Start strong', threshold: 0, icon: '🌱' },
+  { name: 'Explorer', comment: 'Build momentum', threshold: 1, icon: '🧭' },
+  { name: 'Builder', comment: 'Sharpen skills', threshold: 2, icon: '🧱' },
+  { name: 'Specialist', comment: 'Own your craft', threshold: 3, icon: '⚡' },
+  { name: 'Advanced', comment: 'Ready for the toughest scenarios', threshold: 4, icon: '🔥' },
+  { name: 'Pro', comment: 'Lead confidently', threshold: 5, icon: '👑' }
+];
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
+function orderedScenarios() {
+  const order = { easy: 0, medium: 1, hard: 2 };
+  return [...scenarioCatalog].sort((first, second) =>
+    order[first.difficulty] - order[second.difficulty] || first.name.localeCompare(second.name)
+  );
+}
+
+function renderDashboardScenarios() {
+  const container = document.getElementById('dashboardScenarioList');
+  if (!container) return;
+  container.innerHTML = orderedScenarios().map(scenario => `
+    <div class="scenario-item" role="button" tabindex="0" aria-label="Start ${escapeHtml(scenario.name)}"
+      data-scenario="${scenario.type}" data-difficulty="${scenario.difficulty}"${scenario.difficulty === 'hard' ? ' data-hard="true"' : ''}>
+      <div class="scenario-name"><span>${scenario.icon} ${escapeHtml(scenario.shortName || scenario.name)}</span><span class="scenario-level">${scenario.difficulty}</span></div>
+      <div class="scenario-category">${escapeHtml(scenario.category)}</div>
+      <div class="scenario-progress"><div class="scenario-progress-bar" style="width: 0%"></div></div>
+    </div>`).join('');
+}
+
+function renderScenarioCards() {
+  const container = document.getElementById('scenarioCatalogGrid');
+  if (!container) return;
+  container.innerHTML = orderedScenarios().map(scenario => `
+    <article class="scenario-card" data-scenario="${scenario.type}" data-difficulty="${scenario.difficulty}"${scenario.difficulty === 'hard' ? ' data-hard="true"' : ''}>
+      <div class="scenario-card-header">
+        <div class="scenario-card-icon" aria-hidden="true">${scenario.icon}</div>
+        <div><h3>${escapeHtml(scenario.name)}</h3><p class="difficulty ${scenario.difficulty}">${scenario.difficulty} level</p></div>
+      </div>
+      <div class="scenario-card-body">
+        <span class="scenario-category">${escapeHtml(scenario.category)}</span>
+        <p class="scenario-objective">${escapeHtml(scenario.objective)}</p>
+        <div class="scenario-details">
+          <div class="detail-item"><span class="detail-label">Practice time</span><span>5–15 minutes</span></div>
+          <div class="detail-item"><span class="detail-label">Difficulty</span><span>${scenario.difficulty[0].toUpperCase()}${scenario.difficulty.slice(1)}</span></div>
+          <div class="detail-item"><span class="detail-label">Attempts</span><span class="progress-meta">Not attempted yet</span></div>
+          <div class="detail-item"><span class="detail-label">Best score</span><span class="scenario-best-score">—</span></div>
+        </div>
+        <div class="progress-bar-full" role="progressbar" aria-label="${escapeHtml(scenario.name)} mastery" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" style="width: 0%"></div></div>
+        <p class="progress-text">Not started</p>
+      </div>
+      <div class="scenario-card-footer"><button class="btn-primary" type="button" onclick="startScenario('${scenario.type}')">▶ Start scenario</button></div>
+    </article>`).join('');
+}
+
+function renderLevels(stats) {
+  const container = document.getElementById('levelsContent');
+  if (!container) return;
+  const mastered = Math.max(0, Number(stats && stats.masteredSkills) || 0);
+  const currentIndex = Math.max(0, levelCatalog.findIndex(level => level.name === (stats && stats.currentLevel)));
+  const levels = stats && stats.progression && Array.isArray(stats.progression.levels)
+    ? stats.progression.levels
+    : levelCatalog.map((level, index) => ({ ...level, completed: currentIndex >= index, current: currentIndex === index }));
+  const nextLevel = levelCatalog.find(level => level.threshold > mastered);
+  const needed = nextLevel ? Math.max(0, nextLevel.threshold - mastered) : 0;
+  const progressPercent = nextLevel
+    ? Math.min(100, Math.round((mastered - levelCatalog[Math.max(0, currentIndex)].threshold) /
+      Math.max(1, nextLevel.threshold - levelCatalog[Math.max(0, currentIndex)].threshold) * 100))
+    : 100;
+  const progression = stats && stats.progression;
+  const masteredTypes = new Set(progression && Array.isArray(progression.masteredScenarios) ? progression.masteredScenarios : []);
+  const scenarioProgress = stats && stats.scenarioProgress || {};
+
+  container.innerHTML = `
+    <section class="level-overview glass">
+      <div class="level-current-badge">${levelCatalog[currentIndex].icon}</div>
+      <div class="level-overview-copy"><span class="eyebrow">Your current level</span><h2>${escapeHtml((stats && stats.currentLevel) || 'Starter')}</h2>
+        <p>${nextLevel
+          ? `Master ${needed} more scenario type${needed === 1 ? '' : 's'} to reach ${nextLevel.name}.`
+          : 'You have reached the highest level. Keep refining your mastery across the full scenario library.'}</p>
+        <div class="level-progress-track" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progressPercent}"><span style="width:${progressPercent}%"></span></div>
+        <small>${mastered} mastered · ${nextLevel ? `${needed} needed for ${nextLevel.name}` : 'All levels complete'}</small>
+      </div>
+      <div class="level-rule"><strong>Mastery rule</strong><span>At least 2 evaluated attempts and a best score of 75% or higher on a scenario type.</span></div>
+    </section>
+    <section class="level-ladder" aria-label="All career levels">
+      ${levels.map((level, index) => {
+        const details = levelCatalog[index];
+        const status = level.current ? 'current' : level.completed ? 'complete' : 'locked';
+        const requirement = details.threshold === 0 ? 'Starting level' : `Master ${details.threshold} unique scenario type${details.threshold === 1 ? '' : 's'}`;
+        return `<article class="level-card ${status}" aria-label="${details.name}: ${level.current ? 'current level' : level.completed ? 'completed' : 'locked'}">
+          <div class="level-card-icon">${details.icon}</div><div class="level-card-copy"><span class="level-step">LEVEL ${String(index + 1).padStart(2, '0')}</span><h3>${details.name}</h3><p>${details.comment}</p><strong>${requirement}</strong></div>
+          <span class="level-state">${level.current ? 'Current' : level.completed ? '✓ Achieved' : '🔒 Locked'}</span>
+        </article>`;
+      }).join('')}
+    </section>
+    <section class="scenario-mastery-section glass">
+      <div class="scenario-mastery-heading"><div><span class="eyebrow">Your skill map</span><h2>Scenario mastery</h2></div><span>${scenarioCatalog.length} tracks</span></div>
+      <p>Every track is assessed against its own scenario-specific criteria. Hard scenarios unlock at Advanced.</p>
+      <div class="scenario-mastery-grid">
+        ${orderedScenarios().map(scenario => {
+          const progress = scenarioProgress[scenario.type] || {};
+          const attempts = Math.max(0, Number(progress.attempts) || 0);
+          const bestScore = Math.max(0, Number(progress.bestScore) || 0);
+          const isMastered = masteredTypes.has(scenario.type) || (attempts >= 2 && bestScore >= 75);
+          return `<div class="mastery-row ${isMastered ? 'mastered' : ''}">
+            <span class="mastery-icon">${scenario.icon}</span><div class="mastery-copy"><strong>${escapeHtml(scenario.name)}</strong><small>${escapeHtml(scenario.category)}</small></div>
+            <span class="mastery-score">${attempts ? `${bestScore}% best` : 'Not tried'}</span>
+            <span class="mastery-state">${isMastered ? '✓ Mastered' : `${attempts}/2 attempts`}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </section>`;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(getPreferences().theme);
@@ -133,6 +279,10 @@ function setupSocketListeners() {
     } else if (typeof data.recommendationError === 'string') {
       showRecommendationStatus(data.recommendationError);
     }
+  });
+  window.socket.on('feedbackError', message => {
+    appendMessage(typeof message === 'string' ? message : 'Scenario assessment is unavailable. Please try again.', 'bot');
+    showRecommendationStatus('Complete a response and try the assessment again.');
   });
   window.socket.on('skillGapRecommendation', updateRecommendation);
   window.socket.on('skillGapRecommendationError', data => {
@@ -213,6 +363,7 @@ function updateUserStats(stats) {
   localStorage.setItem('userStats', JSON.stringify(stats));
   updateAchievements(stats);
   updateDashboardSummary(stats);
+  renderLevels(stats);
   const completedScenarios = Number(stats.completedScenarios) || 0;
   const averageScore = Number(stats.averageScore) || 0;
   const values = {
@@ -245,6 +396,7 @@ function updateUserStats(stats) {
     const percentage = item.querySelector('.progress-percentage');
     const progressText = item.querySelector('.progress-text');
     const progressMeta = item.querySelector('.progress-meta');
+    const bestScoreLabel = item.querySelector('.scenario-best-score');
     const attempts = Number(progress && progress.attempts) || 0;
     const rawMastery = Number(progress && progress.mastery);
     const rawBestScore = Number(progress && progress.bestScore);
@@ -260,6 +412,8 @@ function updateUserStats(stats) {
     if (fullProgressBar) fullProgressBar.style.width = `${mastery}%`;
     if (percentage) percentage.textContent = hasProgress ? `${Math.round(mastery)}%` : '—';
     if (progressText) progressText.textContent = `${mastery}% Mastered`;
+    if (progressText && !hasProgress) progressText.textContent = 'Not started';
+    if (bestScoreLabel) bestScoreLabel.textContent = hasBestScore ? `${Math.round(bestScore)}%` : '—';
     const progressBarContainer = item.querySelector('[role="progressbar"]');
     if (progressBarContainer) progressBarContainer.setAttribute('aria-valuenow', String(Math.round(mastery)));
     if (progressMeta) {
@@ -334,7 +488,7 @@ function updateAchievements(stats) {
   );
   const masteredScenarios = Object.keys(progress).filter(type => {
     const scenario = progress[type];
-    return (Number(scenario.attempts) || 0) > 0;
+    return (Number(scenario.attempts) || 0) >= 2 && (Number(scenario.bestScore) || 0) >= 75;
   }).length;
   const hasRunScenario = (Number(stats.completedScenarios) || 0) > 0;
   const attempts = Number(stats.totalAttempts) || 0;
@@ -396,9 +550,10 @@ function displayFeedback(feedback) {
   });
   const feedbackText = document.getElementById('feedbackText');
   if (feedbackText) {
-    feedbackText.textContent = feedback.score >= 80
+    const source = feedback.assessmentSource ? ` Assessment: ${feedback.assessmentSource}.` : '';
+    feedbackText.textContent = `${feedback.summary || (feedback.score >= 80
       ? 'Strong performance. Keep using specific evidence and clear next steps.'
-      : 'Good practice session. Focus on specific examples, trade-offs, and measurable outcomes.';
+      : 'Good practice session. Focus on specific examples, trade-offs, and measurable outcomes.')}${source}`;
   }
 }
 
@@ -445,7 +600,7 @@ function toggleProfileMenu() {
 
 const router = {
   navigate(page) {
-    const availablePages = ['dashboard', 'scenarios', 'progress', 'achievements', 'settings', 'help'];
+    const availablePages = ['dashboard', 'scenarios', 'levels', 'progress', 'achievements', 'settings', 'help'];
     if (!availablePages.includes(page)) {
       console.error(`Unsupported page requested: ${page}`);
       page = 'dashboard';
@@ -457,6 +612,9 @@ const router = {
       })
       .then(html => {
         document.getElementById('main-content').innerHTML = html;
+        if (page === 'dashboard') renderDashboardScenarios();
+        if (page === 'scenarios') renderScenarioCards();
+        if (page === 'levels') renderLevels(latestStats);
         attachPageHandlers();
         applyPreferences();
         if (page === 'dashboard' && latestRecommendation) updateRecommendation(latestRecommendation);
@@ -487,6 +645,12 @@ function attachPageHandlers() {
 
   document.querySelectorAll('.scenario-item[data-scenario]').forEach(button => {
     button.addEventListener('click', () => selectScenario(button.dataset.scenario));
+    button.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectScenario(button.dataset.scenario);
+      }
+    });
   });
 
   if (chatMessages) {
@@ -676,9 +840,17 @@ function sendVoiceMessage() {
 }
 
 function selectScenario(type) {
-  const hardScenarios = ['production_incident', 'difficult_colleague', 'priority_conflict'];
-  if (hardScenarios.includes(type) && latestStats && !latestStats.hardScenariosUnlocked) {
-    appendMessage('Hard scenarios unlock at Advanced level after you master four skills.', 'bot');
+  const scenario = typeof type === 'string' && Object.prototype.hasOwnProperty.call(scenarioByType, type)
+    ? scenarioByType[type]
+    : null;
+  if (!scenario) {
+    appendMessage('Please select a valid practice scenario.', 'bot');
+    return;
+  }
+  if (scenario.difficulty === 'hard' && (!latestStats || !latestStats.hardScenariosUnlocked)) {
+    appendMessage(latestStats
+      ? 'Hard scenarios unlock at Advanced level after you master four scenario types.'
+      : 'Your progress is still loading. Please try again in a moment.', 'bot');
     return;
   }
   currentScenario = type;
@@ -692,11 +864,11 @@ function selectScenario(type) {
 
   const scenarioLabel = document.getElementById('selectedScenario');
   if (scenarioLabel) {
-    scenarioLabel.textContent = `Selected: ${scenarioLabels[type] || type}`;
+    scenarioLabel.textContent = `Selected: ${scenarioLabels[type]}`;
   }
   const dashboardScenarioLabel = document.getElementById('scenarioLabel');
   if (dashboardScenarioLabel) {
-    dashboardScenarioLabel.textContent = scenarioLabels[type] || type;
+    dashboardScenarioLabel.textContent = scenarioLabels[type];
   }
 
   const chatMessages = document.getElementById('chatMessages');

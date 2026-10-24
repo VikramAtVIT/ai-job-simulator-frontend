@@ -342,6 +342,9 @@ main {
 .rubric-item { display: flex; justify-content: space-between; gap: 15px; padding: 10px 0; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,.07); font-size: .86rem; }
 .rubric-score { color: var(--secondary); font-weight: 800; }
 .feedback-text { margin-top: 15px; padding: 14px; color: var(--muted); background: rgba(255,255,255,.045); border-radius: 12px; line-height: 1.55; font-size: .86rem; }
+.react-recommendation { display: grid; gap: 6px; margin-top: 14px; padding: 14px 16px; background: linear-gradient(135deg, rgba(39,215,197,.1), rgba(124,108,255,.12)); border: 1px solid rgba(39,215,197,.22); border-radius: 14px; }
+.react-recommendation strong { color: var(--text); font-size: .87rem; }
+.react-recommendation p { margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
 .progress-card, .content-card { background: var(--panel) !important; border: 1px solid var(--border) !important; border-radius: 20px !important; box-shadow: var(--shadow) !important; color: var(--text); }
 .progress-card h2, .content-card h2, .content-card h3 { color: var(--text) !important; }
 .overall-stat, .skill-item { background: rgba(255,255,255,.05) !important; }

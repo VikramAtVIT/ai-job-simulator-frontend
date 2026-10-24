@@ -10,22 +10,22 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Scenarios Completed</div>
-            <div class="stat-value" id="completedCount">0</div>
+            <div class="stat-value" id="completedCount">12</div>
             <div class="stat-change">Start your first scenario</div>
         </div>
         <div class="stat-card secondary">
             <div class="stat-label">Average Score</div>
-            <div class="stat-value" id="avgScore">0%</div>
+            <div class="stat-value" id="avgScore">82%</div>
             <div class="stat-change">No scores yet</div>
         </div>
         <div class="stat-card accent">
             <div class="stat-label">Current Level</div>
-            <div class="stat-value" id="currentLevel">Starter</div>
+            <div class="stat-value" id="currentLevel">Pro</div>
             <div class="stat-change">New learner</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Total Attempts</div>
-            <div class="stat-value" id="totalAttempts">0</div>
+            <div class="stat-value" id="totalAttempts">34</div>
             <div class="stat-change">No attempts yet</div>
         </div>
     </div>
@@ -42,6 +42,7 @@
                     <div class="message-bubble">
                         👋 Hello! I'm your AI Interview Coach. Select a scenario to get started and let's practice your interview skills together!
                     </div>
+                    <div id="react-coaching-panel"></div>
                 </div>
             </div>
 
@@ -80,7 +81,7 @@
             <div class="scenarios-section">
                 <div class="section-title">Practice Scenarios</div>
                 
-                <div class="scenario-item" onclick="selectScenario('manager_review')">
+                <div class="scenario-item" data-scenario="manager_review" onclick="selectScenario('manager_review')">
                     <div class="scenario-name">
                         <span>Manager Review</span>
                         <span class="scenario-level">Easy</span>
@@ -90,7 +91,7 @@
                     </div>
                 </div>
 
-                <div class="scenario-item" onclick="selectScenario('client_requirement')">
+                <div class="scenario-item" data-scenario="client_requirement" onclick="selectScenario('client_requirement')">
                     <div class="scenario-name">
                         <span>Client Requirement</span>
                         <span class="scenario-level">Medium</span>
@@ -100,7 +101,7 @@
                     </div>
                 </div>
 
-                <div class="scenario-item" onclick="selectScenario('production_incident')">
+                <div class="scenario-item" data-scenario="production_incident" onclick="selectScenario('production_incident')">
                     <div class="scenario-name">
                         <span>Production Incident</span>
                         <span class="scenario-level">Hard</span>
@@ -110,7 +111,7 @@
                     </div>
                 </div>
 
-                <div class="scenario-item" onclick="selectScenario('difficult_colleague')">
+                <div class="scenario-item" data-scenario="difficult_colleague" onclick="selectScenario('difficult_colleague')">
                     <div class="scenario-name">
                         <span>Difficult Colleague</span>
                         <span class="scenario-level">Hard</span>
@@ -120,7 +121,7 @@
                     </div>
                 </div>
 
-                <div class="scenario-item" onclick="selectScenario('daily_standup')">
+                <div class="scenario-item" data-scenario="daily_standup" onclick="selectScenario('daily_standup')">
                     <div class="scenario-name">
                         <span>Daily Standup</span>
                         <span class="scenario-level">Easy</span>
@@ -130,7 +131,7 @@
                     </div>
                 </div>
 
-                <div class="scenario-item" onclick="selectScenario('priority_conflict')">
+                <div class="scenario-item" data-scenario="priority_conflict" onclick="selectScenario('priority_conflict')">
                     <div class="scenario-name">
                         <span>Priority Conflict</span>
                         <span class="scenario-level">Hard</span>

@@ -8,7 +8,6 @@ let voiceInterimTranscript = '';
 let voiceConfidence = 0;
 let voiceIsRecording = false;
 let voiceRestartTimeout = null;
-let lastScenarioOpening = '';
 
 const scenarioLabels = {
   manager_review: 'Manager performance review',
@@ -19,14 +18,19 @@ const scenarioLabels = {
   priority_conflict: 'Priority conflict resolution'
 };
 
-const scenarioIntros = {
-  manager_review: 'Welcome to your performance review. Start by sharing one result you are proud of and the impact it had.',
-  client_requirement: 'Welcome to the client requirements discussion. Start by asking the most important question before proposing a solution.',
-  production_incident: 'You are leading a live production incident. Start by explaining how you would assess impact and stabilize the service safely.',
-  difficult_colleague: 'Your teammate disagrees with your approach. Explain your position and show how you would keep the conversation constructive.',
-  daily_standup: 'Welcome to today’s standup. Share what you completed, what you will do next, and any blocker.',
-  priority_conflict: 'Two stakeholders need urgent work. Explain how you would compare impact, urgency, and dependencies before prioritizing.'
-};
+function renderReactRecommendation(recommendation) {
+  const rootElement = document.getElementById('react-coaching-panel');
+  if (!rootElement || !window.React || !window.ReactDOM) return;
+  const recommendationElement = React.createElement(
+    'div',
+    { className: 'react-recommendation' },
+    React.createElement('span', { className: 'eyebrow' }, 'Live coaching'),
+    React.createElement('strong', null, 'Skill-gap recommendation'),
+    React.createElement('p', null, recommendation)
+  );
+  if (!rootElement._reactRoot) rootElement._reactRoot = ReactDOM.createRoot(rootElement);
+  rootElement._reactRoot.render(recommendationElement);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
@@ -49,11 +53,12 @@ function setupSocketListeners() {
   });
   window.socket.on('scenarioStarted', data => {
     currentScenario = data.type;
-    if (data.intro !== lastScenarioOpening) {
-      appendMessage(data.intro, 'bot');
-    }
+    appendMessage(data.intro, 'bot');
   });
-  window.socket.on('aiResponse', data => appendMessage(data.message, 'bot'));
+  window.socket.on('aiResponse', data => {
+    appendMessage(data.message, 'bot');
+    if (data.recommendation) renderReactRecommendation(data.recommendation);
+  });
   window.socket.on('voiceAnalysis', data => {
     const analysis = document.getElementById('voiceAnalysis');
     if (!analysis) return;
@@ -74,6 +79,25 @@ function updateUserStats(stats) {
   Object.entries(values).forEach(([id, value]) => {
     const element = document.getElementById(id);
     if (element) element.textContent = value;
+  });
+  const pageValues = {
+    progressAverageScore: `${stats.averageScore}%`,
+    progressCompleted: stats.completedScenarios,
+    progressAttempts: stats.totalAttempts,
+    progressLevel: stats.currentLevel,
+    achievementCount: `${Math.min(stats.completedScenarios, 12)}/12`
+  };
+  Object.entries(pageValues).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+  document.querySelectorAll('[data-scenario]').forEach(item => {
+    const progress = stats.scenarioProgress && stats.scenarioProgress[item.dataset.scenario];
+    const bar = item.querySelector('.scenario-progress-bar');
+    if (bar && progress) {
+      const mastery = Math.min(100, progress.bestScore || 0);
+      bar.style.width = `${mastery}%`;
+    }
   });
 }
 
@@ -156,6 +180,8 @@ const router = {
       .then(html => {
         document.getElementById('main-content').innerHTML = html;
         attachPageHandlers();
+        const savedStats = localStorage.getItem('userStats');
+        if (savedStats) updateUserStats(JSON.parse(savedStats));
       })
       .catch(err => console.error(err));
   }
@@ -338,8 +364,6 @@ function selectScenario(type) {
     scenarioLabel.textContent = `Selected: ${scenarioLabels[type] || type}`;
   }
 
-  lastScenarioOpening = scenarioIntros[type];
-  appendMessage(lastScenarioOpening, 'bot');
   window.socket.emit('selectScenario', { scenarioType: type });
 }
 

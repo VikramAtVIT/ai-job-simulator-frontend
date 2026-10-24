@@ -38,12 +38,8 @@
             </div>
 
             <div class="chat-messages" id="chatMessages">
-                <div class="message bot">
-                    <div class="message-bubble">
-                        👋 Hello! I'm your AI Interview Coach. Select a scenario to get started and let's practice your interview skills together!
-                    </div>
-                    <div id="react-coaching-panel"></div>
-                </div>
+                <div class="chat-empty-state">Choose a scenario to receive your single role-specific opening response.</div>
+                <div id="react-coaching-panel"></div>
             </div>
 
             <div class="chat-input-area">
@@ -101,7 +97,7 @@
                     </div>
                 </div>
 
-                <div class="scenario-item" data-scenario="production_incident" onclick="selectScenario('production_incident')">
+                <div class="scenario-item" data-scenario="production_incident" data-hard="true" onclick="selectScenario('production_incident')">
                     <div class="scenario-name">
                         <span>Production Incident</span>
                         <span class="scenario-level">Hard</span>
@@ -111,7 +107,7 @@
                     </div>
                 </div>
 
-                <div class="scenario-item" data-scenario="difficult_colleague" onclick="selectScenario('difficult_colleague')">
+                <div class="scenario-item" data-scenario="difficult_colleague" data-hard="true" onclick="selectScenario('difficult_colleague')">
                     <div class="scenario-name">
                         <span>Difficult Colleague</span>
                         <span class="scenario-level">Hard</span>
@@ -131,7 +127,7 @@
                     </div>
                 </div>
 
-                <div class="scenario-item" data-scenario="priority_conflict" onclick="selectScenario('priority_conflict')">
+                <div class="scenario-item" data-scenario="priority_conflict" data-hard="true" onclick="selectScenario('priority_conflict')">
                     <div class="scenario-name">
                         <span>Priority Conflict</span>
                         <span class="scenario-level">Hard</span>

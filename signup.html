@@ -110,6 +110,8 @@
             </div>
             <button type="submit" class="btn-signup">Sign Up</button>
         </form>
+        <div class="auth-divider"><span>or</span></div>
+        <button class="google-button" type="button" onclick="continueWithGoogle()">Continue with Google</button>
         <div class="login-link">
             Already have an account? <a href="login.html">Login</a>
         </div>
@@ -117,6 +119,16 @@
 
     <script>
         const API_URL = window.APP_CONFIG.backendUrl;
+        async function continueWithGoogle() {
+            const response = await fetch(`${API_URL}/api/auth/google/url`);
+            const data = await response.json();
+            if (!data.success) {
+                document.getElementById('errorMessage').textContent = data.message || 'Google sign-in is not configured.';
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+            window.location.href = data.url;
+        }
 
         async function handleSignup(event) {
             event.preventDefault();

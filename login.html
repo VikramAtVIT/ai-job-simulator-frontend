@@ -18,11 +18,22 @@
       <input type="password" id="password" placeholder="demo123" required>
       <button class="primary-button" type="submit">Sign in</button>
     </form>
+    <div class="auth-divider"><span>or</span></div>
+    <button class="google-button" type="button" onclick="continueWithGoogle()">Continue with Google</button>
     <a class="link" href="signup.html">Create a new account</a>
   </div>
   </div>
   <script>
     const API_URL = window.APP_CONFIG.backendUrl;
+    async function continueWithGoogle() {
+      const response = await fetch(`${API_URL}/api/auth/google/url`);
+      const data = await response.json();
+      if (!data.success) {
+        alert(data.message || 'Google sign-in is not configured.');
+        return;
+      }
+      window.location.href = data.url;
+    }
     async function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('email').value;

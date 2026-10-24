@@ -21,6 +21,11 @@
         <a href="#" onclick="router.navigate('help'); return false;">Help</a>
         <a href="#" onclick="logout(); return false;">Logout</a>
       </nav>
+      <div class="sidebar-footer">
+        <button class="theme-toggle sidebar-theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle colour theme">
+          <span class="theme-icon">☾</span><span class="theme-toggle-label">Dark mode</span>
+        </button>
+      </div>
     </aside>
     <main>
       <div id="main-content"><p>Loading...</p></div>

@@ -9,6 +9,84 @@ let voiceConfidence = 0;
 let voiceIsRecording = false;
 let voiceRestartTimeout = null;
 
+const defaultPreferences = { theme: 'dark', hardScenarios: true, recommendations: true };
+
+function getPreferences() {
+  try {
+    return { ...defaultPreferences, ...JSON.parse(localStorage.getItem('appPreferences') || '{}') };
+  } catch (error) {
+    localStorage.removeItem('appPreferences');
+    return { ...defaultPreferences };
+  }
+}
+
+function savePreferences(preferences) {
+  localStorage.setItem('appPreferences', JSON.stringify(preferences));
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  document.querySelectorAll('.theme-toggle-label').forEach(element => {
+    element.textContent = theme === 'light' ? 'Light mode' : 'Dark mode';
+  });
+  document.querySelectorAll('.theme-icon').forEach(element => {
+    element.textContent = theme === 'light' ? '☀' : '☾';
+  });
+}
+
+function setTheme(theme) {
+  const preferences = getPreferences();
+  preferences.theme = theme;
+  savePreferences(preferences);
+  applyTheme(theme);
+  applyPreferences();
+}
+
+function toggleTheme() {
+  setTheme(getPreferences().theme === 'light' ? 'dark' : 'light');
+}
+
+function setPreference(name, value) {
+  const preferences = getPreferences();
+  preferences[name] = value;
+  savePreferences(preferences);
+  applyPreferences();
+}
+
+function applyPreferences() {
+  const preferences = getPreferences();
+  applyTheme(preferences.theme);
+  document.querySelectorAll('[data-hard="true"]').forEach(element => {
+    element.hidden = !preferences.hardScenarios;
+  });
+  document.querySelectorAll('.difficulty.hard').forEach(element => {
+    const card = element.closest('.scenario-card');
+    if (card) card.hidden = !preferences.hardScenarios;
+  });
+  const lightModeToggle = document.getElementById('lightModeToggle');
+  const hardScenariosToggle = document.getElementById('hardScenariosToggle');
+  const recommendationsToggle = document.getElementById('recommendationsToggle');
+  if (lightModeToggle) lightModeToggle.checked = preferences.theme === 'light';
+  if (hardScenariosToggle) hardScenariosToggle.checked = preferences.hardScenarios;
+  if (recommendationsToggle) recommendationsToggle.checked = preferences.recommendations;
+}
+
+function consumeGoogleRedirect() {
+  const params = new URLSearchParams(window.location.search);
+  const authToken = params.get('authToken');
+  const userId = params.get('userId');
+  const user = params.get('user');
+  if (!authToken || !userId || !user) return;
+  try {
+    localStorage.setItem('authToken', authToken);
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('currentUser', user);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } catch (error) {
+    console.error('Unable to complete Google sign-in:', error);
+  }
+}
+
 const scenarioLabels = {
   manager_review: 'Manager performance review',
   client_requirement: 'Client requirement discussion',
@@ -20,7 +98,7 @@ const scenarioLabels = {
 
 function renderReactRecommendation(recommendation) {
   const rootElement = document.getElementById('react-coaching-panel');
-  if (!rootElement || !window.React || !window.ReactDOM) return;
+  if (!rootElement || !window.React || !window.ReactDOM || !getPreferences().recommendations) return;
   const recommendationElement = React.createElement(
     'div',
     { className: 'react-recommendation' },
@@ -33,6 +111,8 @@ function renderReactRecommendation(recommendation) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  applyTheme(getPreferences().theme);
+  consumeGoogleRedirect();
   checkAuth();
   window.socket = io(window.APP_CONFIG.backendUrl, {
     auth: {
@@ -53,6 +133,8 @@ function setupSocketListeners() {
   });
   window.socket.on('scenarioStarted', data => {
     currentScenario = data.type;
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) chatMessages.innerHTML = '<div id="react-coaching-panel"></div>';
     appendMessage(data.intro, 'bot');
   });
   window.socket.on('aiResponse', data => {
@@ -180,6 +262,7 @@ const router = {
       .then(html => {
         document.getElementById('main-content').innerHTML = html;
         attachPageHandlers();
+        applyPreferences();
         const savedStats = localStorage.getItem('userStats');
         if (savedStats) updateUserStats(JSON.parse(savedStats));
       })
@@ -364,6 +447,10 @@ function selectScenario(type) {
     scenarioLabel.textContent = `Selected: ${scenarioLabels[type] || type}`;
   }
 
+  const chatMessages = document.getElementById('chatMessages');
+  if (chatMessages) {
+    chatMessages.innerHTML = '<div class="chat-empty-state">Connecting to your scenario...</div><div id="react-coaching-panel"></div>';
+  }
   window.socket.emit('selectScenario', { scenarioType: type });
 }
 

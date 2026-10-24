@@ -1,10 +1,33 @@
-<div class="content-page">
+<div class="content-page settings-page">
     <div class="header">
         <h1>Settings</h1>
     </div>
-    <div class="content-card">
-        <h2>Account settings</h2>
-        <p>Your profile is stored locally for this demo application.</p>
+    <div class="settings-grid">
+      <section class="content-card settings-card">
+        <span class="eyebrow">Personalise your practice</span>
+        <h2>Experience settings</h2>
+        <p>Make the simulator feel right for the way you learn. Changes are saved on this device.</p>
+        <label class="setting-row">
+          <span><strong>Light mode</strong><small>Use a bright, high-contrast workspace.</small></span>
+          <input class="switch-input" id="lightModeToggle" type="checkbox" onchange="setTheme(this.checked ? 'light' : 'dark')">
+          <span class="switch"></span>
+        </label>
+        <label class="setting-row">
+          <span><strong>Include hard scenarios</strong><small>Show production, conflict, and prioritisation practice.</small></span>
+          <input class="switch-input" id="hardScenariosToggle" type="checkbox" onchange="setPreference('hardScenarios', this.checked)">
+          <span class="switch"></span>
+        </label>
+        <label class="setting-row">
+          <span><strong>Show coaching recommendations</strong><small>Display skill-gap guidance after each AI response.</small></span>
+          <input class="switch-input" id="recommendationsToggle" type="checkbox" onchange="setPreference('recommendations', this.checked)">
+          <span class="switch"></span>
+        </label>
+      </section>
+      <section class="content-card settings-card account-settings">
+        <span class="eyebrow">Account</span>
+        <h2>Profile and access</h2>
+        <p id="settingsAccountText">Your profile and practice history are securely linked to your account.</p>
         <button class="btn-primary" type="button" onclick="handleLogout()">Log out</button>
+      </section>
     </div>
 </div>

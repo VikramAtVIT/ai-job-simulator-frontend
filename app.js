@@ -136,6 +136,21 @@ const levelCatalog = [
   { name: 'Advanced', comment: 'Ready for the toughest scenarios', threshold: 8, icon: '🔥' },
   { name: 'Pro', comment: 'Lead confidently', threshold: 10, icon: '👑' }
 ];
+const scenarioMasteryRequirement = { attempts: 5, bestScore: 75 };
+const achievementCatalog = [
+  { id: 'firstStep', name: 'First Step', icon: '🏅', description: 'Complete your first evaluated practice attempt.', target: 1, unit: 'attempts', value: stats => Number(stats.completedScenarios) || 0, isUnlocked: (stats, value) => value >= 1 },
+  { id: 'gettingStarted', name: 'Getting Started', icon: '🚀', description: 'Earn a best score of 80% on any scenario.', target: 80, unit: '% best score', value: stats => Math.max(0, ...Object.values(stats.scenarioProgress || {}).map(progress => Number(progress.bestScore) || 0)), isUnlocked: (stats, value) => value >= 80 },
+  { id: 'risingStar', name: 'Rising Star', icon: '⭐', description: 'Complete 5 evaluated practice attempts.', target: 5, unit: 'attempts', value: stats => Number(stats.totalAttempts) || 0, isUnlocked: (stats, value) => value >= 5 },
+  { id: 'dedication', name: 'Dedication', icon: '💪', description: 'Complete 10 evaluated practice attempts.', target: 10, unit: 'attempts', value: stats => Number(stats.totalAttempts) || 0, isUnlocked: (stats, value) => value >= 10 },
+  { id: 'consistentImprover', name: 'Practice Makes Progress', icon: '📈', description: 'Practise the same scenario at least 3 times.', target: 3, unit: 'attempts on one scenario', value: stats => Math.max(0, ...Object.values(stats.scenarioProgress || {}).map(progress => Number(progress.attempts) || 0)), isUnlocked: (stats, value) => value >= 3 },
+  { id: 'master', name: 'Scenario Master', icon: '💎', description: 'Master 6 scenario types: 5 assessed attempts and a best score of 75% on each.', target: 6, unit: 'mastered scenario types', value: stats => Object.values(stats.scenarioProgress || {}).filter(progress => (Number(progress.attempts) || 0) >= getScenarioMasteryRequirement(stats).attempts && (Number(progress.bestScore) || 0) >= getScenarioMasteryRequirement(stats).bestScore).length, isUnlocked: (stats, value) => value >= 6 },
+  { id: 'perfectScore', name: 'Perfect Score', icon: '🎯', description: 'Earn a 100% score on any scenario.', target: 100, unit: '% best score', value: stats => Math.max(0, ...Object.values(stats.scenarioProgress || {}).map(progress => Number(progress.bestScore) || 0)), isUnlocked: (stats, value) => value >= 100 },
+  { id: 'onFire', name: 'High Performer', icon: '🔥', description: 'Average at least 85% across 10 assessed attempts.', target: 85, unit: '% average · 10 attempts needed', value: stats => Number(stats.averageScore) || 0, isUnlocked: (stats, value) => (Number(stats.totalAttempts) || 0) >= 10 && value >= 85, progress: (stats, value) => Math.min(100, (value / 85) * 100, ((Number(stats.totalAttempts) || 0) / 10) * 100) },
+  { id: 'champion', name: 'Top Performer', icon: '👑', description: 'Average at least 90% across 5 assessed attempts.', target: 90, unit: '% average · 5 attempts needed', value: stats => Number(stats.averageScore) || 0, isUnlocked: (stats, value) => (Number(stats.totalAttempts) || 0) >= 5 && value >= 90, progress: (stats, value) => Math.min(100, (value / 90) * 100, ((Number(stats.totalAttempts) || 0) / 5) * 100) },
+  { id: 'versatile', name: 'Well-Rounded', icon: '🌈', description: 'Practise scenarios in 3 different skill areas.', target: 3, unit: 'skill areas', value: stats => new Set(Object.entries(stats.scenarioProgress || {}).filter(([, progress]) => (Number(progress.attempts) || 0) > 0).map(([type]) => scenarioByType[type] && scenarioByType[type].category).filter(Boolean)).size, isUnlocked: (stats, value) => value >= 3 },
+  { id: 'legendary', name: 'Legendary', icon: '🌟', description: 'Unlock every other achievement.', target: 11, unit: 'other achievements', value: () => 0 },
+  { id: 'scholar', name: 'Scholar', icon: '🎓', description: 'Complete 50 evaluated practice attempts.', target: 50, unit: 'attempts', value: stats => Number(stats.totalAttempts) || 0, isUnlocked: (stats, value) => value >= 50 }
+];
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, character => ({
@@ -145,6 +160,25 @@ function escapeHtml(value) {
     '"': '&quot;',
     "'": '&#39;'
   })[character]);
+}
+
+function getScenarioMasteryRequirement(stats) {
+  const requirement = stats && stats.progression && stats.progression.masteryRequirement;
+  const attempts = Number(requirement && requirement.attempts);
+  const bestScore = Number(requirement && requirement.bestScore);
+  return {
+    attempts: Number.isInteger(attempts) && attempts > 0 ? attempts : scenarioMasteryRequirement.attempts,
+    bestScore: Number.isFinite(bestScore) && bestScore > 0 ? bestScore : scenarioMasteryRequirement.bestScore
+  };
+}
+
+function getScenarioMasteryProgress(progress, requirement) {
+  const attempts = Math.max(0, Number(progress && progress.attempts) || 0);
+  const bestScore = Math.max(0, Number(progress && progress.bestScore) || 0);
+  if (attempts >= requirement.attempts && bestScore >= requirement.bestScore) return 100;
+  const attemptProgress = Math.min(100, (attempts / requirement.attempts) * 100);
+  const scoreProgress = Math.min(100, (bestScore / requirement.bestScore) * 100);
+  return Math.min(99, Math.round((attemptProgress + scoreProgress) / 2));
 }
 
 function orderedScenarios() {
@@ -194,6 +228,7 @@ function renderScenarioCards() {
 function renderLevels(stats) {
   const container = document.getElementById('levelsContent');
   if (!container) return;
+  const masteryRequirement = getScenarioMasteryRequirement(stats);
   const mastered = Math.max(0, Number(stats && stats.masteredSkills) || 0);
   const currentIndex = Math.max(0, levelCatalog.findIndex(level => level.name === (stats && stats.currentLevel)));
   const levels = stats && stats.progression && Array.isArray(stats.progression.levels)
@@ -219,7 +254,7 @@ function renderLevels(stats) {
         <div class="level-progress-track" role="progressbar" aria-label="Progress to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progressPercent}"><span style="width:${progressPercent}%"></span></div>
         <small>${mastered} mastered · ${nextLevel ? `${needed} needed for ${nextLevel.name}` : 'All levels complete'}</small>
       </div>
-      <div class="level-rule"><strong>Mastery & retries</strong><span>Master a scenario with at least 2 evaluated attempts and a best score of 75% or higher. Retry any scenario as often as you like; there is no attempt limit.</span></div>
+      <div class="level-rule"><strong>Mastery & retries</strong><span>Master a scenario with at least ${masteryRequirement.attempts} evaluated attempts and a best score of ${masteryRequirement.bestScore}% or higher. Retry any scenario as often as you like; there is no attempt limit.</span></div>
     </section>
     <section class="level-ladder" aria-label="All career levels">
       ${levels.map((level, index) => {
@@ -240,11 +275,11 @@ function renderLevels(stats) {
           const progress = scenarioProgress[scenario.type] || {};
           const attempts = Math.max(0, Number(progress.attempts) || 0);
           const bestScore = Math.max(0, Number(progress.bestScore) || 0);
-          const isMastered = masteredTypes.has(scenario.type) || (attempts >= 2 && bestScore >= 75);
+          const isMastered = masteredTypes.has(scenario.type) || (attempts >= masteryRequirement.attempts && bestScore >= masteryRequirement.bestScore);
           return `<div class="mastery-row ${isMastered ? 'mastered' : ''}">
             <span class="mastery-icon">${scenario.icon}</span><div class="mastery-copy"><strong>${escapeHtml(scenario.name)}</strong><small>${escapeHtml(scenario.category)}</small></div>
             <span class="mastery-score">${attempts ? `${bestScore}% best` : 'Not tried'}</span>
-            <span class="mastery-state">${isMastered ? '✓ Mastered' : `${attempts}/2 attempts`}</span>
+            <span class="mastery-state">${isMastered ? '✓ Mastered' : `${attempts}/${masteryRequirement.attempts} attempts`}</span>
           </div>`;
         }).join('')}
       </div>
@@ -381,8 +416,7 @@ function updateUserStats(stats) {
     progressAverageScore: `${averageScore}%`,
     progressCompleted: completedScenarios,
     progressAttempts: Number(stats.totalAttempts) || 0,
-    progressLevel: stats.currentLevel,
-    achievementCount: `${Math.min(stats.completedScenarios, 12)}/12`
+    progressLevel: stats.currentLevel
   };
   Object.entries(pageValues).forEach(([id, value]) => {
     const element = document.getElementById(id);
@@ -398,12 +432,10 @@ function updateUserStats(stats) {
     const progressMeta = item.querySelector('.progress-meta');
     const bestScoreLabel = item.querySelector('.scenario-best-score');
     const attempts = Number(progress && progress.attempts) || 0;
-    const rawMastery = Number(progress && progress.mastery);
     const rawBestScore = Number(progress && progress.bestScore);
-    const hasMastery = Number.isFinite(rawMastery) && rawMastery >= 0;
     const hasBestScore = Number.isFinite(rawBestScore) && rawBestScore >= 0;
-    const hasProgress = attempts > 0 || hasMastery || hasBestScore;
-    const mastery = Math.min(100, Math.max(0, hasMastery ? rawMastery : hasBestScore ? rawBestScore : 0));
+    const hasProgress = attempts > 0 || hasBestScore;
+    const mastery = getScenarioMasteryProgress(progress, getScenarioMasteryRequirement(stats));
     const bestScore = hasBestScore ? Math.min(100, Math.max(0, rawBestScore)) : mastery;
     if (bar) {
       bar.style.width = `${mastery}%`;
@@ -411,8 +443,9 @@ function updateUserStats(stats) {
     if (progressBar) progressBar.style.width = `${mastery}%`;
     if (fullProgressBar) fullProgressBar.style.width = `${mastery}%`;
     if (percentage) percentage.textContent = hasProgress ? `${Math.round(mastery)}%` : '—';
-    if (progressText) progressText.textContent = `${mastery}% Mastered`;
-    if (progressText && !hasProgress) progressText.textContent = 'Not started';
+    if (progressText) progressText.textContent = mastery === 100
+      ? 'Mastered'
+      : hasProgress ? `${mastery}% mastery progress` : 'Not started';
     if (bestScoreLabel) bestScoreLabel.textContent = hasBestScore ? `${Math.round(bestScore)}%` : '—';
     const progressBarContainer = item.querySelector('[role="progressbar"]');
     if (progressBarContainer) progressBarContainer.setAttribute('aria-valuenow', String(Math.round(mastery)));
@@ -480,51 +513,64 @@ function updateDashboardSummary(stats) {
 }
 
 function updateAchievements(stats) {
-  const progress = stats.scenarioProgress || {};
-  const scenarioProgress = Object.values(progress);
-  const bestScore = scenarioProgress.reduce(
-    (best, scenario) => Math.max(best, Number(scenario.bestScore) || 0),
-    0
-  );
-  const masteredScenarios = Object.keys(progress).filter(type => {
-    const scenario = progress[type];
-    return (Number(scenario.attempts) || 0) >= 2 && (Number(scenario.bestScore) || 0) >= 75;
-  }).length;
-  const hasRunScenario = (Number(stats.completedScenarios) || 0) > 0;
   const attempts = Number(stats.totalAttempts) || 0;
-  const averageScore = Number(stats.averageScore) || 0;
-  const unlocked = {
-    firstStep: hasRunScenario,
-    gettingStarted: hasRunScenario && bestScore >= 80,
-    risingStar: (Number(stats.completedScenarios) || 0) >= 5,
-    dedication: attempts >= 10,
-    consistentImprover: scenarioProgress.some(scenario => (Number(scenario.attempts) || 0) >= 3),
-    master: masteredScenarios >= 6,
-    perfectScore: hasRunScenario && bestScore >= 100,
-    onFire: attempts >= 10 && averageScore >= 85,
-    champion: hasRunScenario && averageScore >= 90,
-    speedrunner: false,
-    legendary: false,
-    scholar: attempts >= 50
-  };
-  unlocked.legendary = Object.values(unlocked).every(Boolean);
+  const metrics = Object.fromEntries(achievementCatalog.map(achievement => [
+    achievement.id,
+    achievement.value(stats)
+  ]));
+  const unlocked = Object.fromEntries(achievementCatalog
+    .filter(achievement => achievement.id !== 'legendary')
+    .map(achievement => [
+      achievement.id,
+      achievement.isUnlocked(stats, metrics[achievement.id])
+    ]));
+  unlocked.legendary = Object.entries(unlocked)
+    .filter(([id]) => id !== 'legendary')
+    .every(([, isUnlocked]) => isUnlocked);
+  metrics.legendary = achievementCatalog.filter(achievement =>
+    achievement.id !== 'legendary' && unlocked[achievement.id]
+  ).length;
 
-  const unlockedCount = Object.values(unlocked).filter(Boolean).length;
+  const unlockedCount = achievementCatalog.filter(achievement => unlocked[achievement.id]).length;
+  const totalAchievements = achievementCatalog.length;
   const achievementCount = document.getElementById('achievementCount');
-  if (achievementCount) achievementCount.textContent = `${unlockedCount}/12`;
+  if (achievementCount) achievementCount.textContent = `${unlockedCount}/${totalAchievements}`;
   const achievementProgress = document.querySelector('.achievement-progress .progress-bar-inner');
+  const achievementProgressBar = document.querySelector('.achievement-progress .progress-bar-outer');
   const progressLabel = document.querySelector('.achievement-progress > span');
-  const percentage = Math.round((unlockedCount / 12) * 100);
+  const percentage = Math.round((unlockedCount / totalAchievements) * 100);
   if (achievementProgress) achievementProgress.style.width = `${percentage}%`;
+  if (achievementProgressBar) achievementProgressBar.setAttribute('aria-valuenow', String(percentage));
   if (progressLabel) progressLabel.textContent = `${percentage}% Complete`;
+  const achievementGrid = document.querySelector('.achievements-grid');
+  if (achievementGrid) {
+    achievementGrid.innerHTML = achievementCatalog.map(achievement => {
+      const value = metrics[achievement.id];
+      const isUnlocked = unlocked[achievement.id];
+      const rawProgress = Math.min(100, Math.round((value / achievement.target) * 100));
+      const progress = achievement.id === 'legendary'
+        ? Math.round((metrics.legendary / achievement.target) * 100)
+        : achievement.progress ? Math.round(achievement.progress(stats, value)) : rawProgress;
+      const displayValue = achievement.unit.startsWith('%')
+        ? `${Math.min(value, achievement.target)}% / ${achievement.target}%`
+        : `${Math.min(value, achievement.target)} / ${achievement.target} ${achievement.unit}`;
+      const extraRequirement = achievement.id === 'onFire'
+        ? ` · ${Math.min(attempts, 10)}/10 attempts`
+        : achievement.id === 'champion'
+          ? ` · ${Math.min(attempts, 5)}/5 attempts`
+          : '';
+      const progressDescription = achievement.id === 'legendary'
+        ? `${metrics.legendary}/11 other achievements`
+        : `${displayValue}${extraRequirement}`;
+      return `<article class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}" data-achievement="${achievement.id}" aria-label="${escapeHtml(achievement.name)}: ${isUnlocked ? 'unlocked' : 'locked'}">
+        <div class="achievement-card-top"><span class="achievement-badge" aria-hidden="true">${achievement.icon}</span><span class="achievement-status">${isUnlocked ? '✓ Earned' : 'In progress'}</span></div>
+        <div class="achievement-info"><h3>${escapeHtml(achievement.name)}</h3><p>${escapeHtml(achievement.description)}</p></div>
+        <div class="achievement-progress-small"><div class="achievement-progress-track" role="progressbar" aria-label="${escapeHtml(achievement.name)} progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${isUnlocked ? 100 : Math.min(progress, 99)}"><span style="width:${isUnlocked ? 100 : Math.min(progress, 99)}%"></span></div>
+          <span>${escapeHtml(progressDescription)}</span></div>
+      </article>`;
+    }).join('');
+  }
 
-  document.querySelectorAll('[data-achievement]').forEach(card => {
-    const isUnlocked = Boolean(unlocked[card.dataset.achievement]);
-    card.classList.toggle('unlocked', isUnlocked);
-    card.classList.toggle('locked', !isUnlocked);
-    const date = card.querySelector('.achievement-date');
-    if (date) date.textContent = isUnlocked ? 'Unlocked' : 'Not unlocked';
-  });
 }
 
 function generateFeedback() {

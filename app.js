@@ -8,6 +8,7 @@ let voiceInterimTranscript = '';
 let voiceConfidence = 0;
 let voiceIsRecording = false;
 let voiceRestartTimeout = null;
+let lastScenarioOpening = '';
 
 const scenarioLabels = {
   manager_review: 'Manager performance review',
@@ -16,6 +17,15 @@ const scenarioLabels = {
   difficult_colleague: 'Difficult colleague',
   daily_standup: 'Daily standup update',
   priority_conflict: 'Priority conflict resolution'
+};
+
+const scenarioIntros = {
+  manager_review: 'Welcome to your performance review. Start by sharing one result you are proud of and the impact it had.',
+  client_requirement: 'Welcome to the client requirements discussion. Start by asking the most important question before proposing a solution.',
+  production_incident: 'You are leading a live production incident. Start by explaining how you would assess impact and stabilize the service safely.',
+  difficult_colleague: 'Your teammate disagrees with your approach. Explain your position and show how you would keep the conversation constructive.',
+  daily_standup: 'Welcome to today’s standup. Share what you completed, what you will do next, and any blocker.',
+  priority_conflict: 'Two stakeholders need urgent work. Explain how you would compare impact, urgency, and dependencies before prioritizing.'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,10 +42,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupSocketListeners() {
+  if (!window.socket) return;
   window.socket.on('userStats', updateUserStats);
   window.socket.on('feedbackGenerated', data => {
     displayFeedback(data.feedback);
   });
+  window.socket.on('scenarioStarted', data => {
+    currentScenario = data.type;
+    if (data.intro !== lastScenarioOpening) {
+      appendMessage(data.intro, 'bot');
+    }
+  });
+  window.socket.on('aiResponse', data => appendMessage(data.message, 'bot'));
+  window.socket.on('voiceAnalysis', data => {
+    const analysis = document.getElementById('voiceAnalysis');
+    if (!analysis) return;
+    analysis.textContent = `${data.feedback} ${data.duration}s • ${data.confidence}% confidence`;
+    updateVoiceStatus('Voice response sent.');
+  });
+  window.socket.on('error', message => console.error('Socket error:', message));
 }
 
 function updateUserStats(stats) {
@@ -313,6 +338,8 @@ function selectScenario(type) {
     scenarioLabel.textContent = `Selected: ${scenarioLabels[type] || type}`;
   }
 
+  lastScenarioOpening = scenarioIntros[type];
+  appendMessage(lastScenarioOpening, 'bot');
   window.socket.emit('selectScenario', { scenarioType: type });
 }
 
@@ -335,17 +362,3 @@ function appendMessage(message, sender) {
   chatMessages.appendChild(element);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
-
-window.socket.on('scenarioStarted', data => {
-  currentScenario = data.type;
-  appendMessage(data.intro, 'bot');
-});
-
-window.socket.on('aiResponse', data => appendMessage(data.message, 'bot'));
-window.socket.on('voiceAnalysis', data => {
-  const analysis = document.getElementById('voiceAnalysis');
-  if (!analysis) return;
-  analysis.textContent = `${data.feedback} ${data.duration}s • ${data.confidence}% confidence`;
-  updateVoiceStatus('Voice response sent.');
-});
-window.socket.on('error', message => console.error('Socket error:', message));

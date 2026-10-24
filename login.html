@@ -1,63 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login | AI Job Simulator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in | AI Job Simulator</title>
   <link rel="stylesheet" href="styles.css">
   <script src="config.js"></script>
+  <script src="auth.js" defer></script>
 </head>
-<body>
-  <div class="auth-page">
-  <div class="auth-card">
+<body class="auth-page" data-auth-page="sign-in">
+  <main class="auth-card">
     <span class="eyebrow">AI Job Simulator</span>
     <h1>Welcome back</h1>
-    <p class="subtitle">Continue building your workplace confidence.</p>
-    <form onsubmit="handleLogin(event)">
-      <label for="email">Email address</label>
-      <input type="email" id="email" placeholder="demo@codeapex.com" required>
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="demo123" required>
-      <button class="primary-button" type="submit">Sign in</button>
-    </form>
-    <div class="auth-divider"><span>or</span></div>
-    <button class="google-button" type="button" onclick="continueWithGoogle()">Continue with Google</button>
+    <p class="subtitle">Sign in securely to continue building your workplace confidence.</p>
+    <p class="clerk-auth-error" id="clerkAuthError" role="alert" aria-live="polite"></p>
+    <div id="clerkAuthMount"></div>
     <a class="link" href="signup.html">Create a new account</a>
-  </div>
-  </div>
-  <script>
-    const API_URL = window.APP_CONFIG.backendUrl;
-    async function continueWithGoogle() {
-      const response = await fetch(`${API_URL}/api/auth/google/url`);
-      const data = await response.json();
-      if (!data.success) {
-        alert(data.message || 'Google sign-in is not configured.');
-        return;
-      }
-      window.location.href = data.url;
-    }
-    async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const res = await fetch(`${API_URL}/api/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const contentType = res.headers.get('content-type') || '';
-      const data = contentType.includes('application/json')
-        ? await res.json()
-        : { message: 'The server returned an unexpected response. Please restart the backend.' };
-      if (data.success) {
-        const user = data.user || { id: data.userId, email };
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userId', user.id || data.userId || '');
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        localStorage.removeItem('userStats');
-        window.location.href = './index.html';
-      } else {
-        alert(data.message || data.error || 'Login failed');
-      }
-    }
-  </script>
+  </main>
 </body>
 </html>

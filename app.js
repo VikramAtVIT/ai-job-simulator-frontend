@@ -146,8 +146,15 @@ function setupSocketListeners() {
     appendMessage(data.intro, 'bot');
   });
   window.socket.on('aiResponse', data => {
-    appendMessage(data.message, 'bot');
-    if (data.recommendation) renderReactRecommendation(data.recommendation);
+    const message = data && typeof data.message === 'string' ? data.message.trim() : '';
+    if (!message) {
+      appendMessage('The coach could not complete that reply. Please send your response again.', 'bot');
+      return;
+    }
+    appendMessage(message, 'bot');
+    if (data.recommendation && typeof data.recommendation === 'string') {
+      renderReactRecommendation(data.recommendation.trim());
+    }
   });
   window.socket.on('voiceAnalysis', data => {
     const analysis = document.getElementById('voiceAnalysis');
@@ -493,7 +500,7 @@ function sendMessage() {
 
 function appendMessage(message, sender) {
   const chatMessages = document.getElementById('chatMessages');
-  if (!chatMessages) return;
+  if (!chatMessages || typeof message !== 'string' || !message.trim()) return;
   const element = document.createElement('p');
   element.className = sender;
   element.textContent = message;

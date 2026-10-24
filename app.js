@@ -9,6 +9,7 @@ let voiceConfidence = 0;
 let voiceIsRecording = false;
 let voiceRestartTimeout = null;
 let latestStats = null;
+let latestRecommendation = '';
 
 const defaultPreferences = { theme: 'dark', hardScenarios: true };
 
@@ -126,6 +127,9 @@ function setupSocketListeners() {
   window.socket.on('userStats', updateUserStats);
   window.socket.on('feedbackGenerated', data => {
     displayFeedback(data.feedback);
+    if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
+      updateRecommendation(data.recommendation);
+    }
   });
   window.socket.on('scenarioStarted', data => {
     currentScenario = data.type;
@@ -136,6 +140,9 @@ function setupSocketListeners() {
   window.socket.on('aiResponse', data => {
     const message = typeof data.message === 'string' ? data.message.trim() : '';
     if (message) appendMessage(message, 'bot');
+    if (typeof data.recommendation === 'string' && data.recommendation.trim()) {
+      updateRecommendation(data.recommendation);
+    }
   });
   window.socket.on('voiceAnalysis', data => {
     const feedback = typeof data.feedback === 'string' ? data.feedback.trim() : '';
@@ -155,6 +162,17 @@ function updateBackendStatus(state, label) {
   status.dataset.state = state;
   const labelElement = status.querySelector('.backend-status-label');
   if (labelElement) labelElement.textContent = label;
+}
+
+function updateRecommendation(recommendation) {
+  const text = typeof recommendation === 'string' ? recommendation.trim() : '';
+  if (!text) return;
+  latestRecommendation = text;
+  const element = document.getElementById('aiRecommendation');
+  if (element) {
+    element.textContent = latestRecommendation;
+    element.classList.remove('recommendation-empty');
+  }
 }
 
 function updateUserStats(stats) {
@@ -407,6 +425,7 @@ const router = {
         document.getElementById('main-content').innerHTML = html;
         attachPageHandlers();
         applyPreferences();
+        if (page === 'dashboard' && latestRecommendation) updateRecommendation(latestRecommendation);
         document.querySelectorAll('.sidebar a').forEach(link => {
           link.classList.toggle('active', link.dataset.page === page);
         });

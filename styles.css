@@ -416,6 +416,28 @@ main {
 .section-title { margin-bottom: 14px; color: var(--text); font-size: .95rem; font-weight: 800; letter-spacing: -.01em; }
 .scenarios-section { max-height: 356px; margin-bottom: 18px; overflow: hidden auto; scrollbar-color: var(--primary) rgba(255,255,255,.06); }
 .scenarios-section .section-title { position: sticky; top: -22px; z-index: 1; margin: -22px -22px 14px; padding: 22px 22px 14px; background: rgba(19,24,52,.96); }
+.recommendation-card {
+  margin-bottom: 18px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(124,108,255,.13), rgba(39,215,197,.07));
+  border: 1px solid rgba(124,108,255,.28);
+  border-radius: 16px;
+}
+.recommendation-heading { display: flex; align-items: center; gap: 10px; }
+.recommendation-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  color: var(--secondary);
+  background: rgba(39,215,197,.12);
+  border-radius: 10px;
+}
+.recommendation-heading .section-title { margin: 0; }
+.recommendation-subtitle { margin: 3px 0 0; color: var(--muted); font-size: .72rem; }
+.recommendation-copy { margin: 12px 0 0; color: var(--text); font-size: .82rem; line-height: 1.55; }
+.recommendation-copy.recommendation-empty { color: var(--muted); }
 .achievements-section { margin-bottom: 18px; }
 .scenario-item { margin-bottom: 10px; padding: 14px; background: rgba(255,255,255,.045); border: 1px solid transparent; border-radius: 13px; cursor: pointer; }
 .scenario-item:hover, .scenario-item.active { background: rgba(124,108,255,.14); border-color: rgba(124,108,255,.42); }

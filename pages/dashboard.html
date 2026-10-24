@@ -46,7 +46,7 @@
             </div>
 
             <div class="chat-input-area">
-                <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()">🎤</button>
+                <button class="voice-btn" id="voiceBtn" type="button" onclick="toggleVoiceRecording()" aria-pressed="false" aria-label="Start voice recording">🎤</button>
                 <input 
                     type="text" 
                     class="chat-input" 
@@ -55,6 +55,24 @@
                     onkeypress="handleChatKeypress(event)"
                 >
                 <button class="chat-btn" onclick="sendMessage()">Send</button>
+            </div>
+
+            <div class="voice-chat-panel">
+                <div class="voice-chat-copy">
+                    <span class="eyebrow">Voice practice</span>
+                    <span id="voiceStatus">Ready to record</span>
+                </div>
+                <div class="voice-chat-actions">
+                    <button class="voice-action-btn" type="button" onclick="toggleVoiceRecording()">
+                        <span aria-hidden="true">🎙</span>
+                        <span id="voiceButtonLabel">Start recording</span>
+                    </button>
+                    <button class="voice-action-btn secondary" id="sendVoiceBtn" type="button" onclick="sendVoiceMessage()" disabled>
+                        Send transcript
+                    </button>
+                </div>
+                <div class="voice-transcript" id="voiceTranscript">Your transcript will appear here after recording.</div>
+                <div class="voice-analysis" id="voiceAnalysis"></div>
             </div>
         </div>
 
@@ -99,6 +117,26 @@
                     </div>
                     <div class="scenario-progress">
                         <div class="scenario-progress-bar" style="width: 10%"></div>
+                    </div>
+                </div>
+
+                <div class="scenario-item" onclick="selectScenario('daily_standup')">
+                    <div class="scenario-name">
+                        <span>Daily Standup</span>
+                        <span class="scenario-level">Easy</span>
+                    </div>
+                    <div class="scenario-progress">
+                        <div class="scenario-progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="scenario-item" onclick="selectScenario('priority_conflict')">
+                    <div class="scenario-name">
+                        <span>Priority Conflict</span>
+                        <span class="scenario-level">Hard</span>
+                    </div>
+                    <div class="scenario-progress">
+                        <div class="scenario-progress-bar" style="width: 0%"></div>
                     </div>
                 </div>
             </div>

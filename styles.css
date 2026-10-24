@@ -303,15 +303,27 @@ main {
 .message-bubble { max-width: 82%; padding: 12px 14px; color: #e9ecff; background: rgba(124,108,255,.16); border-radius: 13px; line-height: 1.55; }
 .message.user .message-bubble { color: #062522; background: var(--secondary); }
 .chat-input-area { display: flex; gap: 10px; }
-.chat-input { min-width: 0; padding: 13px 15px; color: var(--text); background: rgba(255,255,255,.07); border: 1px solid var(--border); border-radius: 12px; outline: none; }
+.chat-input { flex: 1; min-width: 0; padding: 13px 15px; color: var(--text); background: rgba(255,255,255,.07); border: 1px solid var(--border); border-radius: 12px; outline: none; }
 .chat-input::placeholder { color: #8790b3; }
 .chat-input:focus { border-color: var(--secondary); box-shadow: 0 0 0 4px rgba(39,215,197,.1); }
 .voice-btn, .chat-btn, .btn-primary { border: 0; border-radius: 11px; }
-.voice-btn { width: 46px; color: var(--text); background: rgba(39,215,197,.14); border: 1px solid rgba(39,215,197,.35); }
+.voice-btn { flex: 0 0 46px; width: 46px; height: 46px; color: var(--text); background: rgba(39,215,197,.14); border: 1px solid rgba(39,215,197,.35); }
 .voice-btn.recording { background: #d94d72; }
 .chat-btn, .btn-primary { padding: 12px 17px; color: white; font-weight: 750; background: linear-gradient(110deg, var(--primary), #a855f7); box-shadow: 0 9px 22px rgba(124,108,255,.2); }
+.voice-chat-panel { display: grid; grid-template-columns: minmax(150px, 1fr) auto; gap: 12px; margin-top: 14px; padding: 14px; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 15px; }
+.voice-chat-copy { display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.voice-chat-copy > span:last-child { color: var(--muted); font-size: .78rem; }
+.voice-chat-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.voice-action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 9px 12px; color: var(--text); font-size: .78rem; font-weight: 750; background: rgba(39,215,197,.12); border: 1px solid rgba(39,215,197,.35); border-radius: 10px; }
+.voice-action-btn.secondary { background: rgba(124,108,255,.16); border-color: rgba(124,108,255,.45); }
+.voice-action-btn:disabled { cursor: not-allowed; opacity: .45; }
+.voice-transcript { grid-column: 1 / -1; min-height: 40px; padding: 10px 12px; color: var(--muted); background: rgba(0,0,0,.14); border-radius: 10px; font-size: .8rem; line-height: 1.45; }
+.voice-transcript.has-transcript { color: var(--text); }
+.voice-analysis { grid-column: 1 / -1; color: var(--secondary); font-size: .76rem; }
 .section-title { margin-bottom: 14px; color: var(--text); font-size: .95rem; font-weight: 800; letter-spacing: -.01em; }
-.scenarios-section, .achievements-section { margin-bottom: 18px; }
+.scenarios-section { max-height: 356px; margin-bottom: 18px; overflow: hidden auto; scrollbar-color: var(--primary) rgba(255,255,255,.06); }
+.scenarios-section .section-title { position: sticky; top: -22px; z-index: 1; margin: -22px -22px 14px; padding: 22px 22px 14px; background: rgba(19,24,52,.96); }
+.achievements-section { margin-bottom: 18px; }
 .scenario-item { margin-bottom: 10px; padding: 14px; background: rgba(255,255,255,.045); border: 1px solid transparent; border-radius: 13px; cursor: pointer; }
 .scenario-item:hover, .scenario-item.active { background: rgba(124,108,255,.14); border-color: rgba(124,108,255,.42); }
 .scenario-name { display: flex; justify-content: space-between; gap: 10px; color: var(--text); font-size: .87rem; font-weight: 700; }
@@ -348,6 +360,10 @@ main {
   .chat-input-area { flex-wrap: wrap; }
   .chat-input { flex: 1 1 calc(100% - 56px); }
   .chat-btn { width: 100%; }
+  .voice-chat-panel { grid-template-columns: 1fr; }
+  .voice-chat-actions { justify-content: stretch; }
+  .voice-action-btn { flex: 1; }
+  .voice-transcript, .voice-analysis { grid-column: auto; }
 }
 
 /* Keep page-specific inline templates on the same professional visual system. */

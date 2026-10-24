@@ -7,7 +7,7 @@
     </div>
 
     <div class="scenarios-full-grid">
-        <div class="scenario-card" data-scenario="manager_review">
+        <div class="scenario-card" data-scenario="manager_review" data-difficulty="easy">
             <div class="scenario-card-header">
                 <div class="scenario-card-icon">👔</div>
                 <div>
@@ -54,7 +54,7 @@
             </div>
         </div>
 
-        <div class="scenario-card" data-scenario="client_requirement">
+        <div class="scenario-card" data-scenario="client_requirement" data-difficulty="medium">
             <div class="scenario-card-header">
                 <div class="scenario-card-icon">💼</div>
                 <div>
@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <div class="scenario-card" data-scenario="production_incident">
+        <div class="scenario-card" data-scenario="production_incident" data-difficulty="hard">
             <div class="scenario-card-header">
                 <div class="scenario-card-icon">🚨</div>
                 <div>
@@ -148,7 +148,7 @@
             </div>
         </div>
 
-        <div class="scenario-card" data-scenario="difficult_colleague">
+        <div class="scenario-card" data-scenario="difficult_colleague" data-difficulty="hard">
             <div class="scenario-card-header">
                 <div class="scenario-card-icon">🤝</div>
                 <div>
@@ -195,7 +195,7 @@
             </div>
         </div>
 
-        <div class="scenario-card" data-scenario="daily_standup">
+        <div class="scenario-card" data-scenario="daily_standup" data-difficulty="easy">
             <div class="scenario-card-header">
                 <div class="scenario-card-icon">🗣️</div>
                 <div>
@@ -225,7 +225,7 @@
             </div>
         </div>
 
-        <div class="scenario-card" data-scenario="priority_conflict">
+        <div class="scenario-card" data-scenario="priority_conflict" data-difficulty="hard">
             <div class="scenario-card-header">
                 <div class="scenario-card-icon">⚖️</div>
                 <div>
@@ -306,10 +306,16 @@
 
         .scenario-card-header .difficulty {
             font-size: 12px;
+            line-height: 1.2;
+            min-height: 0;
+            margin: 0;
             padding: 4px 8px;
             border-radius: 4px;
             background: rgba(255, 255, 255, 0.3);
             display: inline-block;
+            color: #fff;
+            font-weight: 700;
+            white-space: nowrap;
         }
 
         .scenario-card-header .difficulty.easy {

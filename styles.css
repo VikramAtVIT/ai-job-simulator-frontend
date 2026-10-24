@@ -414,7 +414,7 @@ main {
 .voice-transcript.has-transcript { color: var(--text); }
 .voice-analysis { grid-column: 1 / -1; color: var(--secondary); font-size: .76rem; }
 .section-title { margin-bottom: 14px; color: var(--text); font-size: .95rem; font-weight: 800; letter-spacing: -.01em; }
-.scenarios-section { max-height: 356px; margin-bottom: 18px; overflow: hidden auto; scrollbar-color: var(--primary) rgba(255,255,255,.06); }
+.scenarios-section { display: flex; flex-direction: column; max-height: 356px; margin-bottom: 18px; overflow: hidden auto; scrollbar-color: var(--primary) rgba(255,255,255,.06); }
 .scenarios-section .section-title { position: sticky; top: -22px; z-index: 1; margin: -22px -22px 14px; padding: 22px 22px 14px; background: rgba(19,24,52,.96); }
 .recommendation-card {
   margin-bottom: 18px;
@@ -440,6 +440,9 @@ main {
 .recommendation-copy.recommendation-empty { color: var(--muted); }
 .achievements-section { margin-bottom: 18px; }
 .scenario-item { margin-bottom: 10px; padding: 14px; background: rgba(255,255,255,.045); border: 1px solid transparent; border-radius: 13px; cursor: pointer; }
+.scenario-item[data-difficulty="easy"] { order: 1; }
+.scenario-item[data-difficulty="medium"] { order: 2; }
+.scenario-item[data-difficulty="hard"] { order: 3; }
 .scenario-item:hover, .scenario-item.active { background: rgba(124,108,255,.14); border-color: rgba(124,108,255,.42); }
 .scenario-item.locked-scenario { position: relative; overflow: hidden; opacity: .7; cursor: not-allowed; }
 .scenario-item.locked-scenario::after {
@@ -465,8 +468,24 @@ main {
   background: rgba(8,11,27,.72);
   content: "LOCKED • MASTER 4 SKILLS";
 }
-.scenario-name { display: flex; justify-content: space-between; gap: 10px; color: var(--text); font-size: .87rem; font-weight: 700; }
-.scenario-level { color: var(--secondary); font-size: .72rem; }
+.scenario-name { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text); font-size: .87rem; font-weight: 700; }
+.scenario-level { display: inline-flex; flex: 0 0 auto; align-items: center; padding: 4px 8px; border: 1px solid transparent; border-radius: 999px; font-size: .68rem; font-weight: 800; line-height: 1.2; }
+.scenario-item[data-difficulty="easy"] .scenario-level { color: #baf3cf; background: rgba(40,167,69,.18); border-color: rgba(80,220,130,.38); }
+.scenario-item[data-difficulty="medium"] .scenario-level { color: #ffe08a; background: rgba(255,193,7,.16); border-color: rgba(255,209,102,.38); }
+.scenario-item[data-difficulty="hard"] .scenario-level { color: #ffb4bd; background: rgba(220,53,69,.18); border-color: rgba(255,125,140,.38); }
+.scenario-card[data-difficulty="easy"] { order: 1; }
+.scenario-card[data-difficulty="medium"] { order: 2; }
+.scenario-card[data-difficulty="hard"] { order: 3; }
+.scenario-card-header .difficulty { min-height: 0; margin: 0; padding: 5px 10px; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; color: #fff !important; font-size: .74rem; font-weight: 800; line-height: 1.2; white-space: nowrap; }
+.scenario-card-header .difficulty.easy { background: rgba(22,163,74,.42); }
+.scenario-card-header .difficulty.medium { background: rgba(202,138,4,.48); }
+.scenario-card-header .difficulty.hard { background: rgba(220,38,38,.45); }
+:root[data-theme="light"] .scenario-item[data-difficulty="easy"] .scenario-level { color: #166534; background: #dcfce7; border-color: #86efac; }
+:root[data-theme="light"] .scenario-item[data-difficulty="medium"] .scenario-level { color: #854d0e; background: #fef3c7; border-color: #fcd34d; }
+:root[data-theme="light"] .scenario-item[data-difficulty="hard"] .scenario-level { color: #9f1239; background: #ffe4e6; border-color: #fda4af; }
+.scenarios-full-grid .scenario-card-header .difficulty.easy { background: rgba(22,163,74,.42); }
+.scenarios-full-grid .scenario-card-header .difficulty.medium { background: rgba(202,138,4,.48); }
+.scenarios-full-grid .scenario-card-header .difficulty.hard { background: rgba(220,38,38,.45); }
 .scenario-progress { height: 5px; margin-top: 11px; overflow: hidden; background: rgba(255,255,255,.1); border-radius: 5px; }
 .scenario-progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: inherit; }
 .achievement-item { display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.07); }

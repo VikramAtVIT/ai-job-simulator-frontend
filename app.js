@@ -369,7 +369,10 @@ function updateRecommendation(recommendation) {
   const nextStep = typeof recommendation.nextStep === 'string' ? recommendation.nextStep.trim() : '';
   if (!skill || !evidence || !nextStep) return;
   recommendationPending = false;
-  latestRecommendation = `${skill}: ${evidence} Next practice: ${nextStep}`;
+  const sourceNote = recommendation.source === 'scenario_fallback'
+    ? ' AI coaching is temporarily unavailable; this scenario-based guidance is grounded in your response.'
+    : '';
+  latestRecommendation = `${skill}: ${evidence} Next practice: ${nextStep}${sourceNote}`;
   const element = document.getElementById('aiRecommendation');
   if (element) {
     element.textContent = latestRecommendation;

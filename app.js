@@ -624,7 +624,7 @@ function logout() {
   localStorage.removeItem('userId');
   localStorage.removeItem('currentUser');
   localStorage.removeItem('userStats');
-  window.location.href = './login.html';
+  window.location.href = './index.html';
 }
 
 function handleLogout() {

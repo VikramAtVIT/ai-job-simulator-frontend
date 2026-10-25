@@ -1,40 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AI Job Simulator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Build workplace confidence with AI-powered practice scenarios, personalized feedback, and a clear path to mastery.">
+  <meta name="theme-color" content="#080b1b">
+  <title>AI Job Simulator | Practice the moments that move your career forward</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://ai-job-simulator-backend.onrender.com/socket.io/socket.io.js"></script>
-  <script src="config.js"></script>
-
+  <script>
+    const authParams = new URLSearchParams(window.location.search);
+    if (authParams.has('authToken') && authParams.has('userId') && authParams.has('user')) {
+      window.location.replace(`./simulator.html${window.location.search}`);
+    }
+  </script>
 </head>
-<body>
-  <div class="app-container">
-    <aside class="sidebar">
-      <h2>AI Job Simulator</h2>
-      <nav>
-        <a data-page="dashboard" href="#" onclick="router.navigate('dashboard'); return false;"><span>▦</span>Dashboard</a>
-        <a data-page="scenarios" href="#" onclick="router.navigate('scenarios'); return false;"><span>◈</span>Scenarios</a>
-        <a data-page="levels" href="#" onclick="router.navigate('levels'); return false;"><span>⬆</span>Levels</a>
-        <a data-page="progress" href="#" onclick="router.navigate('progress'); return false;"><span>↗</span>Progress</a>
-        <a data-page="achievements" href="#" onclick="router.navigate('achievements'); return false;"><span>✦</span>Achievements</a>
-        <a data-page="settings" href="#" onclick="router.navigate('settings'); return false;"><span>⚙</span>Settings</a>
-        <a data-page="help" href="#" onclick="router.navigate('help'); return false;"><span>?</span>Help</a>
-        <a data-page="logout" href="#" onclick="logout(); return false;"><span>↪</span>Logout</a>
-      </nav>
-      <div class="sidebar-footer">
-        <div class="backend-status" id="backendStatus" role="status" aria-live="polite">
-          <span class="backend-status-dot" aria-hidden="true"></span>
-          <span class="backend-status-label">Connecting to coach...</span>
+<body class="landing-page">
+  <header class="landing-nav">
+    <a class="landing-brand" href="index.html" aria-label="AI Job Simulator home">
+      <span class="landing-brand-mark" aria-hidden="true">✦</span>
+      <span>AI Job <strong>Simulator</strong></span>
+    </a>
+    <nav class="landing-auth" aria-label="Account">
+      <a class="landing-signin" href="login.html">Sign in</a>
+      <a class="landing-signup" href="signup.html">Create account <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main class="landing-main">
+    <section class="landing-hero">
+      <div class="landing-hero-copy">
+        <span class="landing-eyebrow"><span class="landing-live-dot"></span> Practice for the work, not just the interview</span>
+        <h1>Turn real-world challenges into your <span>next strength.</span></h1>
+        <p class="landing-lede">A personal AI-powered workplace simulator where you can rehearse difficult conversations, sharpen practical skills, and learn from every attempt — before the moment that matters.</p>
+        <div class="landing-hero-actions">
+          <a class="landing-cta-primary" href="signup.html">Start practicing <span aria-hidden="true">→</span></a>
+          <a class="landing-cta-secondary" href="#how-it-works"><span class="landing-play-icon" aria-hidden="true">▸</span> See how it works</a>
         </div>
-        <button class="theme-toggle sidebar-theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle colour theme">
-          <span class="theme-icon">☾</span><span class="theme-toggle-label">Dark mode</span>
-        </button>
+        <div class="landing-proof">
+          <span class="landing-proof-icon" aria-hidden="true">◎</span>
+          <p><strong>Practice at your own pace.</strong><br>Retry scenarios, reflect on feedback, and build confidence one conversation at a time.</p>
+        </div>
       </div>
-    </aside>
-    <main>
-      <div id="main-content"><p>Loading...</p></div>
-    </main>
-  </div>
-  <script src="app.js"></script>
+
+      <div class="landing-visual" aria-label="Illustration of a workplace practice session and its learning feedback">
+        <div class="landing-orbit landing-orbit-one"></div>
+        <div class="landing-orbit landing-orbit-two"></div>
+        <div class="landing-float-chip landing-chip-top"><span>✦</span> AI roleplay</div>
+        <article class="landing-preview-card">
+          <div class="landing-preview-top">
+            <div>
+              <span class="landing-preview-kicker">ILLUSTRATIVE SESSION PREVIEW</span>
+              <h2>Lead a project kickoff</h2>
+            </div>
+            <span class="landing-session-state"><i></i> SAMPLE</span>
+          </div>
+          <div class="landing-preview-scenario">
+            <span class="landing-scenario-icon" aria-hidden="true">🧭</span>
+            <div><strong>Scenario brief</strong><p>Your team has different priorities. Align everyone on the goal, ownership, and a realistic first milestone.</p></div>
+          </div>
+          <div class="landing-chat">
+            <div class="landing-chat-line"><span class="landing-avatar">AI</span><p>We have a tight timeline. How would you help the team agree on what matters most?</p></div>
+            <div class="landing-chat-line landing-chat-user"><span class="landing-avatar">YOU</span><p>I’d clarify the outcome first, then compare priorities against impact and effort.</p></div>
+          </div>
+          <div class="landing-feedback">
+            <div class="landing-feedback-heading"><span>✧</span> Coaching insight <small>AFTER YOUR RESPONSE</small></div>
+            <p>Good start. Make the decision easier by asking each owner to name one risk and one measurable milestone.</p>
+            <div class="landing-feedback-tags"><span>Clear communication</span><span>Actionable next step</span></div>
+          </div>
+          <div class="landing-preview-footer"><span><i></i> A safe place to try, learn, and try again</span><span>01 / 05</span></div>
+        </article>
+        <div class="landing-float-chip landing-chip-bottom"><span>↗</span> Progress you can see</div>
+        <div class="landing-float-orb landing-orb-purple"></div>
+        <div class="landing-float-orb landing-orb-teal"></div>
+      </div>
+      <a class="landing-scroll-cue" href="#program"><span></span> Explore the simulator</a>
+    </section>
+
+    <section class="landing-intro" id="program">
+      <div class="landing-section-label"><span>01</span> A PRACTICE SPACE FOR REAL WORK</div>
+      <div class="landing-intro-grid">
+        <h2>Not another course to finish.<br><span>A skill to make your own.</span></h2>
+        <p>Work rarely follows a script. The simulator gives you a place to think out loud, test an approach, and see how your choices land. You speak with an AI roleplay partner, get focused coaching on your response, and carry the lesson into the next attempt.</p>
+      </div>
+      <div class="landing-pillar-grid">
+        <article class="landing-pillar landing-pillar-tilt">
+          <span class="landing-pillar-number">01 / SIMULATE</span><span class="landing-pillar-icon" aria-hidden="true">◈</span>
+          <h3>Practice the conversation</h3><p>Step into realistic workplace situations with a responsive AI partner. Explain your reasoning, ask questions, and choose what to say in your own words.</p>
+          <span class="landing-pillar-depth" aria-hidden="true">01</span>
+        </article>
+        <article class="landing-pillar landing-pillar-tilt landing-pillar-featured">
+          <span class="landing-pillar-number">02 / REFLECT</span><span class="landing-pillar-icon" aria-hidden="true">✧</span>
+          <h3>Understand what worked</h3><p>Get feedback tied to your response: the strengths to keep, the gaps to address, and a concrete next move. Learn from the reasoning behind the score, not just the score itself.</p>
+          <span class="landing-pillar-depth" aria-hidden="true">02</span>
+        </article>
+        <article class="landing-pillar landing-pillar-tilt">
+          <span class="landing-pillar-number">03 / GROW</span><span class="landing-pillar-icon" aria-hidden="true">⬆</span>
+          <h3>Turn repetition into progress</h3><p>Revisit any scenario, track attempts and best scores, and work toward mastery. Levels and achievements make your growing range of skills visible.</p>
+          <span class="landing-pillar-depth" aria-hidden="true">03</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="landing-workflow" id="how-it-works">
+      <div class="landing-workflow-heading">
+        <div class="landing-section-label"><span>02</span> FROM FIRST TRY TO REAL CONFIDENCE</div>
+        <h2>A learning loop built around <span>you.</span></h2>
+        <p>Every session gives you a new chance to apply what you learned. There is no one perfect script to memorize — the goal is a stronger, more thoughtful response.</p>
+      </div>
+      <div class="landing-loop">
+        <article class="landing-loop-step"><span class="landing-loop-index">A</span><div><span class="landing-loop-kicker">PICK YOUR CHALLENGE</span><h3>Choose a scenario</h3><p>Explore technical and people-focused situations, from debugging and data decisions to feedback, teamwork, and planning.</p></div><span class="landing-loop-mark" aria-hidden="true">⌕</span></article>
+        <span class="landing-loop-connector" aria-hidden="true">↓</span>
+        <article class="landing-loop-step landing-loop-step-raised"><span class="landing-loop-index">B</span><div><span class="landing-loop-kicker">THINK IT THROUGH</span><h3>Respond naturally</h3><p>Chat or use voice practice to explain your thinking. The roleplay adapts to your response so each attempt feels like a conversation, not a fixed quiz.</p></div><span class="landing-loop-mark" aria-hidden="true">◎</span></article>
+        <span class="landing-loop-connector" aria-hidden="true">↓</span>
+        <article class="landing-loop-step"><span class="landing-loop-index">C</span><div><span class="landing-loop-kicker">TAKE THE NEXT STEP</span><h3>Apply the coaching</h3><p>Review the assessment, try again with a clearer approach, then use your progress view to choose what to practice next.</p></div><span class="landing-loop-mark" aria-hidden="true">↗</span></article>
+      </div>
+    </section>
+
+    <section class="landing-skills">
+      <div class="landing-skills-copy">
+        <div class="landing-section-label"><span>03</span> BROAD SKILLS, PRACTICAL CONTEXT</div>
+        <h2>Because good work takes more than <span>one kind of skill.</span></h2>
+        <p>Build a balanced toolkit across the technical decisions and human moments that shape a working day. Each scenario gives you a specific objective, so you know what you are practicing and why it matters.</p>
+        <a class="landing-text-link" href="signup.html">Explore your first scenario <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="landing-skill-stack">
+        <div class="landing-skill-card landing-skill-back"><span>04</span><strong>Plan &amp; deliver</strong><small>Priorities · estimates · ownership</small><i>▤</i></div>
+        <div class="landing-skill-card landing-skill-middle"><span>03</span><strong>Collaborate &amp; lead</strong><small>Feedback · facilitation · conflict</small><i>⌘</i></div>
+        <div class="landing-skill-card landing-skill-front"><span>02</span><strong>Reason &amp; solve</strong><small>Debugging · data · trade-offs</small><i>⌁</i></div>
+        <div class="landing-skill-card landing-skill-accent"><span>01</span><strong>Communicate clearly</strong><small>Listen · explain · align</small><i>✳</i></div>
+      </div>
+    </section>
+
+    <section class="landing-progress">
+      <div class="landing-progress-panel">
+        <div class="landing-progress-copy">
+          <div class="landing-section-label"><span>04</span> A PATH YOU CAN SEE</div>
+          <h2>Small wins. Stronger habits. <span>Your next level.</span></h2>
+          <p>Your practice history connects attempts to outcomes. Build mastery by returning to scenarios, improving your best result, and demonstrating consistent performance across different kinds of work.</p>
+          <p class="landing-mastery-note"><strong>How scenario mastery works:</strong> reach a best score of 75% or higher across at least five evaluated attempts. You can retry any scenario as often as you like.</p>
+          <ul class="landing-progress-list">
+            <li><span>✓</span> See attempts and best scores by scenario</li>
+            <li><span>✓</span> Follow level goals and mastery criteria</li>
+            <li><span>✓</span> Earn achievements for meaningful milestones</li>
+          </ul>
+        </div>
+        <div class="landing-level-stack" aria-label="Illustration of progression through levels">
+          <div class="landing-level-card landing-level-locked"><span class="landing-level-icon">✧</span><div><small>LEVEL 04</small><strong>Specialist</strong><span>Build consistency across scenarios</span></div><span class="landing-level-state">UP NEXT</span></div>
+          <div class="landing-level-card landing-level-current"><span class="landing-level-icon">⬡</span><div><small>LEVEL 03 · CURRENT</small><strong>Builder</strong><span>Strengthen your practical toolkit</span><div class="landing-level-meter"><i></i></div></div><span class="landing-level-state">IN PROGRESS</span></div>
+          <div class="landing-level-card landing-level-done"><span class="landing-level-icon">✓</span><div><small>LEVEL 02</small><strong>Explorer</strong><span>Your journey is underway</span></div><span class="landing-level-state">COMPLETE</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-final-cta">
+      <span class="landing-cta-glow" aria-hidden="true"></span>
+      <div class="landing-section-label"><span>05</span> YOUR NEXT CONVERSATION STARTS HERE</div>
+      <h2>Practice the moment.<br><span>Show up ready.</span></h2>
+      <p>Choose a challenge, try your approach, and leave with a clearer next step.</p>
+      <a class="landing-cta-primary" href="signup.html">Create your account <span aria-hidden="true">→</span></a>
+      <small>Already have an account? <a href="login.html">Sign in</a></small>
+    </section>
+  </main>
+
+  <footer class="landing-footer">
+    <a class="landing-brand" href="index.html"><span class="landing-brand-mark" aria-hidden="true">✦</span><span>AI Job <strong>Simulator</strong></span></a>
+    <span>Practice with intention. Grow with every attempt.</span>
+    <div><a href="login.html">Sign in</a><a href="signup.html">Create account</a></div>
+  </footer>
 </body>
 </html>

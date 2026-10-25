@@ -53,7 +53,7 @@
         localStorage.setItem('userId', user.id || data.userId || '');
         localStorage.setItem('currentUser', JSON.stringify(user));
         localStorage.removeItem('userStats');
-        window.location.href = './index.html';
+        window.location.href = './simulator.html';
       } else {
         alert(data.message || data.error || 'Login failed');
       }

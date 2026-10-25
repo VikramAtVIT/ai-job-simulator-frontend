@@ -66,8 +66,11 @@
                     <button class="voice-action-btn secondary" id="sendVoiceBtn" type="button" onclick="sendVoiceMessage()" disabled>
                         Send transcript
                     </button>
+                    <button class="voice-action-btn cancel" id="cancelVoiceBtn" type="button" onclick="cancelVoiceTranscript()" aria-label="Discard voice transcript" disabled>
+                        Cancel
+                    </button>
                 </div>
-                <div class="voice-transcript" id="voiceTranscript">Your transcript will appear here after recording.</div>
+                <div class="voice-transcript" id="voiceTranscript">Your transcript will appear here.</div>
                 <div class="voice-analysis" id="voiceAnalysis"></div>
             </div>
         </div>
@@ -91,31 +94,8 @@
             </div>
 
             <div class="achievements-section">
-                <div class="section-title">Achievements</div>
-                
-                <div class="achievement-item">
-                    <div class="achievement-badge">🏅</div>
-                    <div class="achievement-copy">
-                        <div class="achievement-name">First Step</div>
-                        <div class="achievement-desc">Complete 1 scenario</div>
-                    </div>
-                </div>
-
-                <div class="achievement-item">
-                    <div class="achievement-badge">🚀</div>
-                    <div class="achievement-copy">
-                        <div class="achievement-name">Getting Started</div>
-                        <div class="achievement-desc">Score 80%+</div>
-                    </div>
-                </div>
-
-                <div class="achievement-item achievement-locked">
-                    <div class="achievement-badge">💎</div>
-                    <div class="achievement-copy">
-                        <div class="achievement-name">Master</div>
-                        <div class="achievement-desc">Complete all scenarios</div>
-                    </div>
-                </div>
+                <div class="section-title">Unlocked achievements</div>
+                <div class="dashboard-achievement-list" id="dashboardAchievements" aria-live="polite"></div>
             </div>
         </div>
     </div>

@@ -8,6 +8,7 @@ let voiceTranscript = '';
 let voiceInterimTranscript = '';
 let voiceConfidence = 0;
 let voiceIsRecording = false;
+let voiceCancelRequested = false;
 let voiceRestartTimeout = null;
 let latestStats = null;
 let latestRecommendation = '';
@@ -198,6 +199,42 @@ function renderDashboardScenarios() {
       <div class="scenario-category">${escapeHtml(scenario.category)}</div>
       <div class="scenario-progress"><div class="scenario-progress-bar" style="width: 0%"></div></div>
     </div>`).join('');
+}
+
+function getAchievementState(stats) {
+  const metrics = Object.fromEntries(achievementCatalog.map(achievement => [
+    achievement.id,
+    achievement.value(stats)
+  ]));
+  const unlocked = Object.fromEntries(achievementCatalog
+    .filter(achievement => achievement.id !== 'legendary')
+    .map(achievement => [
+      achievement.id,
+      achievement.isUnlocked(stats, metrics[achievement.id])
+    ]));
+  unlocked.legendary = Object.entries(unlocked)
+    .filter(([id]) => id !== 'legendary')
+    .every(([, isUnlocked]) => isUnlocked);
+  metrics.legendary = achievementCatalog.filter(achievement =>
+    achievement.id !== 'legendary' && unlocked[achievement.id]
+  ).length;
+  return { metrics, unlocked };
+}
+
+function renderDashboardAchievements(stats) {
+  const container = document.getElementById('dashboardAchievements');
+  if (!container) return;
+  const { unlocked } = getAchievementState(stats);
+  const earned = achievementCatalog.filter(achievement => unlocked[achievement.id]);
+  container.innerHTML = earned.length
+    ? earned.map(achievement => `<div class="achievement-item">
+        <div class="achievement-badge" aria-hidden="true">${achievement.icon}</div>
+        <div class="achievement-copy">
+          <div class="achievement-name">${escapeHtml(achievement.name)}</div>
+          <div class="achievement-desc">${escapeHtml(achievement.description)}</div>
+        </div>
+      </div>`).join('')
+    : '<p class="dashboard-achievements-empty">Complete a practice attempt to earn your first achievement.</p>';
 }
 
 function renderScenarioCards() {
@@ -517,22 +554,7 @@ function updateDashboardSummary(stats) {
 
 function updateAchievements(stats) {
   const attempts = Number(stats.totalAttempts) || 0;
-  const metrics = Object.fromEntries(achievementCatalog.map(achievement => [
-    achievement.id,
-    achievement.value(stats)
-  ]));
-  const unlocked = Object.fromEntries(achievementCatalog
-    .filter(achievement => achievement.id !== 'legendary')
-    .map(achievement => [
-      achievement.id,
-      achievement.isUnlocked(stats, metrics[achievement.id])
-    ]));
-  unlocked.legendary = Object.entries(unlocked)
-    .filter(([id]) => id !== 'legendary')
-    .every(([, isUnlocked]) => isUnlocked);
-  metrics.legendary = achievementCatalog.filter(achievement =>
-    achievement.id !== 'legendary' && unlocked[achievement.id]
-  ).length;
+  const { metrics, unlocked } = getAchievementState(stats);
 
   const unlockedCount = achievementCatalog.filter(achievement => unlocked[achievement.id]).length;
   const totalAchievements = achievementCatalog.length;
@@ -573,7 +595,7 @@ function updateAchievements(stats) {
       </article>`;
     }).join('');
   }
-
+  renderDashboardAchievements(stats);
 }
 
 function generateFeedback() {
@@ -661,7 +683,15 @@ const router = {
       })
       .then(html => {
         document.getElementById('main-content').innerHTML = html;
-        if (page === 'dashboard') renderDashboardScenarios();
+        if (page === 'dashboard') {
+          renderDashboardScenarios();
+          renderDashboardAchievements(latestStats || {
+            completedScenarios: 0,
+            totalAttempts: 0,
+            averageScore: 0,
+            scenarioProgress: {}
+          });
+        }
         if (page === 'scenarios') renderScenarioCards();
         if (page === 'levels') renderLevels(latestStats);
         attachPageHandlers();
@@ -731,6 +761,7 @@ function initializeVoiceChat() {
   voiceRecognition.interimResults = true;
   voiceRecognition.lang = 'en-US';
   voiceRecognition.onstart = () => {
+    voiceCancelRequested = false;
     if (!voiceIsRecording) {
       voiceStartedAt = Date.now();
       voiceTranscript = '';
@@ -741,6 +772,7 @@ function initializeVoiceChat() {
     setVoiceRecordingState(true);
   };
   voiceRecognition.onresult = event => {
+    if (voiceCancelRequested) return;
     let interim = '';
     for (let index = event.resultIndex; index < event.results.length; index += 1) {
       const result = event.results[index];
@@ -753,8 +785,10 @@ function initializeVoiceChat() {
     }
     voiceInterimTranscript = interim;
     updateVoiceTranscript(`${voiceTranscript}${voiceInterimTranscript}`.trim());
+    updateVoiceActionButtons();
   };
   voiceRecognition.onerror = event => {
+    if (voiceCancelRequested) return;
     if (event.error === 'no-speech' && voiceIsRecording) {
       updateVoiceStatus('Still listening... please continue speaking.');
       return;
@@ -767,6 +801,10 @@ function initializeVoiceChat() {
       : `Voice input error: ${event.error}`);
   };
   voiceRecognition.onend = () => {
+    if (voiceCancelRequested) {
+      voiceCancelRequested = false;
+      return;
+    }
     if (voiceIsRecording) {
       updateVoiceStatus('Still listening... please continue speaking.');
       voiceRestartTimeout = window.setTimeout(() => {
@@ -784,16 +822,17 @@ function initializeVoiceChat() {
       return;
     }
 
+    setVoiceRecordingState(false);
     const completedTranscript = `${voiceTranscript} ${voiceInterimTranscript}`.trim();
     voiceTranscript = completedTranscript;
     voiceInterimTranscript = '';
     updateVoiceTranscript(completedTranscript);
     if (completedTranscript) {
-      document.getElementById('sendVoiceBtn').disabled = false;
       updateVoiceStatus('Transcript ready to send.');
     } else {
       updateVoiceStatus('No speech detected.');
     }
+    updateVoiceActionButtons();
   };
 }
 
@@ -810,6 +849,7 @@ function toggleVoiceRecording() {
     return;
   }
   document.getElementById('sendVoiceBtn').disabled = true;
+  voiceCancelRequested = false;
   updateVoiceTranscript('');
   try {
     voiceRecognition.start();
@@ -829,7 +869,17 @@ function setVoiceRecordingState(isRecording) {
   button.setAttribute('aria-pressed', String(isRecording));
   button.classList.toggle('recording', isRecording);
   label.textContent = isRecording ? 'Stop recording' : 'Start recording';
+  updateVoiceActionButtons();
   updateVoiceStatus(isRecording ? 'Listening...' : 'Ready');
+}
+
+function updateVoiceActionButtons() {
+  const sendButton = document.getElementById('sendVoiceBtn');
+  const cancelButton = document.getElementById('cancelVoiceBtn');
+  if (sendButton) sendButton.disabled = voiceIsRecording || !voiceTranscript.trim();
+  if (cancelButton) {
+    cancelButton.disabled = !voiceIsRecording && !voiceTranscript.trim() && !voiceInterimTranscript.trim();
+  }
 }
 
 function updateVoiceStatus(message) {
@@ -859,9 +909,32 @@ function resetVoicePractice(statusMessage) {
   updateVoiceTranscript('');
   const sendButton = document.getElementById('sendVoiceBtn');
   if (sendButton) sendButton.disabled = true;
+  const cancelButton = document.getElementById('cancelVoiceBtn');
+  if (cancelButton) cancelButton.disabled = true;
   const analysis = document.getElementById('voiceAnalysis');
   if (analysis) analysis.textContent = '';
   updateVoiceStatus(statusMessage);
+}
+
+function cancelVoiceTranscript() {
+  const voiceButton = document.getElementById('voiceBtn');
+  const wasRecording = voiceIsRecording || voiceButton?.getAttribute('aria-pressed') === 'true';
+  voiceCancelRequested = wasRecording;
+  voiceIsRecording = false;
+  if (voiceRestartTimeout) {
+    window.clearTimeout(voiceRestartTimeout);
+    voiceRestartTimeout = null;
+  }
+  if (wasRecording && voiceRecognition) {
+    try {
+      voiceRecognition.stop();
+    } catch (error) {
+      if (error.name !== 'InvalidStateError') {
+        console.error('Unable to stop discarded voice transcript:', error);
+      }
+    }
+  }
+  resetVoicePractice('Transcript discarded. Ready to record.');
 }
 
 function sendVoiceMessage() {
@@ -885,6 +958,7 @@ function sendVoiceMessage() {
     updateVoiceStatus('Could not send your response. Please try again.');
     return;
   }
+  voiceCancelRequested = false;
   resetVoicePractice('Response sent. Record another when ready.');
 }
 
@@ -902,6 +976,7 @@ function selectScenario(type) {
       : 'Your progress is still loading. Please try again in a moment.', 'bot');
     return;
   }
+  if (voiceIsRecording || voiceTranscript || voiceInterimTranscript) cancelVoiceTranscript();
   currentScenario = type;
   latestRecommendation = null;
   showRecommendationStatus('Send a text or voice response to get a personalized skill-gap focus.');

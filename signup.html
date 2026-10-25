@@ -3,97 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - AI Job Simulator</title>
+    <title>Create account | AI Job Simulator</title>
     <link rel="stylesheet" href="styles.css">
     <script src="config.js"></script>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .signup-container {
-            background: rgba(19, 24, 52, .92);
-            color: #f6f7ff;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-        }
-        .signup-container h1 {
-            text-align: center;
-            color: #f6f7ff;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #d9def5;
-            font-weight: 500;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            color: #f6f7ff;
-            background: rgba(255, 255, 255, .08);
-            border: 1px solid rgba(255, 255, 255, .18);
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        .form-group input::placeholder {
-            color: #aab1d0;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
-        }
-        .btn-signup {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .btn-signup:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        .login-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #c1c7e2;
-        }
-        .login-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .error-message {
-            color: #ffb4c4;
-            text-align: center;
-            margin-bottom: 20px;
-            display: none;
-        }
-    </style>
 </head>
 <body class="auth-page">
     <div class="signup-container auth-card">
-        <h1>Join AI Job Simulator</h1>
+        <span class="eyebrow">AI Job Simulator</span>
+        <h1>Create your account</h1>
+        <p class="subtitle">Start practicing the moments that matter at work.</p>
         <div class="error-message" id="errorMessage"></div>
         <form id="signupForm" onsubmit="handleSignup(event)">
             <div class="form-group">

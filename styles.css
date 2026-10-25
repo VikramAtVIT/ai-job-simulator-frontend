@@ -574,11 +574,12 @@ main {
 .scenarios-full-grid .scenario-card-header .difficulty.hard { background: rgba(220,38,38,.45); }
 .scenario-progress { height: 5px; margin-top: 11px; overflow: hidden; background: rgba(255,255,255,.1); border-radius: 5px; }
 .scenario-progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: inherit; }
-.achievement-item { display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+.achievement-item { display: grid; grid-template-columns: 42px minmax(0, 1fr); column-gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
 .achievement-item:last-child { border-bottom: 0; }
-.achievement-badge { grid-row: span 2; font-size: 1.2rem; }
-.achievement-name { color: var(--text); font-size: .84rem; font-weight: 750; }
-.achievement-desc { color: var(--muted); font-size: .75rem; }
+.achievement-badge { display: grid; width: 40px; height: 40px; place-items: center; background: rgba(124,108,255,.14); border: 1px solid rgba(124,108,255,.24); border-radius: 12px; font-size: 1.2rem; }
+.achievement-copy { display: grid; min-width: 0; gap: 3px; text-align: left; }
+.achievement-name { color: var(--text); font-size: .84rem; font-weight: 750; line-height: 1.25; overflow-wrap: anywhere; }
+.achievement-desc { color: var(--muted); font-size: .75rem; line-height: 1.4; overflow-wrap: anywhere; }
 .achievement-locked { opacity: .5; }
 .feedback-section { margin-top: 18px; }
 .score-circle { display: grid; width: 86px; height: 86px; margin: 4px auto 18px; place-items: center; background: radial-gradient(circle at 35% 30%, #9b91ff, var(--primary)); border: 7px solid rgba(255,255,255,.1); border-radius: 50%; box-shadow: 0 0 0 8px rgba(124,108,255,.1); }

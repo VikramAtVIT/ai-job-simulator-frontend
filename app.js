@@ -370,9 +370,9 @@ function updateRecommendation(recommendation) {
   if (!skill || !evidence || !nextStep) return;
   recommendationPending = false;
   const sourceNote = recommendation.source === 'scenario_fallback'
-    ? ' AI coaching is temporarily unavailable; this scenario-based guidance is grounded in your response.'
+    ? ' (Scenario-based guidance; AI offline.)'
     : '';
-  latestRecommendation = `${skill}: ${evidence} Next practice: ${nextStep}${sourceNote}`;
+  latestRecommendation = `${skill}: ${evidence} Next: ${nextStep}${sourceNote}`;
   const element = document.getElementById('aiRecommendation');
   if (element) {
     element.textContent = latestRecommendation;

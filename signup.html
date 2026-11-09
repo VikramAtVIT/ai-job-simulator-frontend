@@ -1,94 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create account | AI Job Simulator</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b1b">
+  <title>Create Account | AI Job Simulator</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
 </head>
-<body class="auth-page">
-    <div class="signup-container auth-card">
-        <span class="eyebrow">AI Job Simulator</span>
-        <h1>Create your account</h1>
-        <p class="subtitle">Start practicing the moments that matter at work.</p>
-        <div class="error-message" id="errorMessage"></div>
-        <form id="signupForm" onsubmit="handleSignup(event)">
-            <div class="form-group">
-                <label for="name">Full Name</label>
-                <input type="text" id="name" required placeholder="Your name">
-            </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" required placeholder="your@email.com">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" required placeholder="At least 6 characters">
-            </div>
-            <button type="submit" class="btn-signup">Sign Up</button>
-        </form>
-        <div class="auth-divider"><span>or</span></div>
-        <button class="google-button" type="button" onclick="continueWithGoogle()">Continue with Google</button>
-        <div class="login-link">
-            Already have an account? <a href="login.html">Login</a>
+<body class="clerk-auth-page" data-auth-mode="sign-up">
+  <main class="clerk-auth-shell">
+    <section class="clerk-auth-brand" aria-label="AI Job Simulator">
+      <a class="clerk-auth-brand-mark" href="./index.html" aria-label="AI Job Simulator home">
+        <span class="clerk-auth-brand-icon" aria-hidden="true">A</span>
+        <span>AI Job Simulator</span>
+      </a>
+      <div class="clerk-auth-brand-copy">
+        <span class="eyebrow">Your growth starts here</span>
+        <h1>Make your next big moment feel familiar.</h1>
+        <p>Build practical skills in a safe space before the real conversations happen.</p>
+        <div class="clerk-auth-benefits" aria-label="What you can do">
+          <div><span aria-hidden="true">01</span> Choose from hands-on scenarios</div>
+          <div><span aria-hidden="true">02</span> Learn from evidence-based feedback</div>
+          <div><span aria-hidden="true">03</span> See your skills take shape</div>
         </div>
-    </div>
+      </div>
+      <p class="clerk-auth-footnote">Start where you are. Improve one conversation at a time.</p>
+    </section>
 
-    <script>
-        const API_URL = window.APP_CONFIG.backendUrl;
-        async function continueWithGoogle() {
-            const response = await fetch(`${API_URL}/api/auth/google/url`);
-            const data = await response.json();
-            if (!data.success) {
-                document.getElementById('errorMessage').textContent = data.message || 'Google sign-in is not configured.';
-                document.getElementById('errorMessage').style.display = 'block';
-                return;
-            }
-            window.location.href = data.url;
-        }
+    <section class="clerk-auth-panel" aria-label="Create your account">
+      <div class="clerk-auth-card">
+        <div class="clerk-auth-heading">
+          <span class="eyebrow">Get started</span>
+          <h2>Create your account</h2>
+          <p>Sign up to start practicing today.</p>
+        </div>
+        <div id="clerk-auth-widget"></div>
+        <p id="auth-status" class="clerk-auth-status" role="status" aria-live="polite">Loading sign-up options...</p>
+      </div>
+      <p class="clerk-auth-security-note"><span aria-hidden="true">✓</span> Secure sign-up powered by Clerk</p>
+    </section>
+  </main>
 
-        async function handleSignup(event) {
-            event.preventDefault();
-
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
-
-            try {
-                const response = await fetch(`${API_URL}/api/signup`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
-                });
-
-                const contentType = response.headers.get('content-type') || '';
-                const data = contentType.includes('application/json')
-                    ? await response.json()
-                    : { message: 'The server returned an unexpected response. Please restart the backend.' };
-
-                if (data.success) {
-                    localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('userId', data.userId || data.user?.id || '');
-                    localStorage.setItem('currentUser', JSON.stringify(data.user || {
-                        id: data.userId,
-                        email: data.email,
-                        name
-                    }));
-                    localStorage.removeItem('userStats');
-
-                    window.location.href = './simulator.html';
-                } else {
-                    errorMessage.textContent = data.message || 'Sign up failed';
-                    errorMessage.style.display = 'block';
-                }
-            } catch (err) {
-                console.error('Signup error:', err);
-                errorMessage.textContent = 'Network error: ' + err.message;
-                errorMessage.style.display = 'block';
-            }
-        }
-    </script>
+  <script src="clerk-auth.js"></script>
+  <script>window.mountClerkAuthPage();</script>
 </body>
 </html>

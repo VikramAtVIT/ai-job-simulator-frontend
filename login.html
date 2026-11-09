@@ -3,63 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Login | AI Job Simulator</title>
+  <meta name="theme-color" content="#080b1b">
+  <title>Sign In | AI Job Simulator</title>
   <link rel="stylesheet" href="styles.css">
   <script src="config.js"></script>
 </head>
-<body>
-  <div class="auth-page">
-  <div class="auth-card">
-    <span class="eyebrow">AI Job Simulator</span>
-    <h1>Welcome back</h1>
-    <p class="subtitle">Continue building your workplace confidence.</p>
-    <form onsubmit="handleLogin(event)">
-      <label for="email">Email address</label>
-      <input type="email" id="email" placeholder="demo@codeapex.com" required>
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="demo123" required>
-      <button class="primary-button" type="submit">Sign in</button>
-    </form>
-    <div class="auth-divider"><span>or</span></div>
-    <button class="google-button" type="button" onclick="continueWithGoogle()">Continue with Google</button>
-    <a class="link" href="signup.html">Create a new account</a>
-  </div>
-  </div>
-  <script>
-    const API_URL = window.APP_CONFIG.backendUrl;
-    async function continueWithGoogle() {
-      const response = await fetch(`${API_URL}/api/auth/google/url`);
-      const data = await response.json();
-      if (!data.success) {
-        alert(data.message || 'Google sign-in is not configured.');
-        return;
-      }
-      window.location.href = data.url;
-    }
-    async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const res = await fetch(`${API_URL}/api/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const contentType = res.headers.get('content-type') || '';
-      const data = contentType.includes('application/json')
-        ? await res.json()
-        : { message: 'The server returned an unexpected response. Please restart the backend.' };
-      if (data.success) {
-        const user = data.user || { id: data.userId, email };
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userId', user.id || data.userId || '');
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        localStorage.removeItem('userStats');
-        window.location.href = './simulator.html';
-      } else {
-        alert(data.message || data.error || 'Login failed');
-      }
-    }
-  </script>
+<body class="clerk-auth-page" data-auth-mode="sign-in">
+  <main class="clerk-auth-shell">
+    <section class="clerk-auth-brand" aria-label="AI Job Simulator">
+      <a class="clerk-auth-brand-mark" href="./index.html" aria-label="AI Job Simulator home">
+        <span class="clerk-auth-brand-icon" aria-hidden="true">A</span>
+        <span>AI Job Simulator</span>
+      </a>
+      <div class="clerk-auth-brand-copy">
+        <span class="eyebrow">Practice for what’s next</span>
+        <h1>Build confidence for the moments that matter.</h1>
+        <p>Practice real workplace conversations, sharpen your decisions, and grow with every scenario.</p>
+        <div class="clerk-auth-benefits" aria-label="What you can do">
+          <div><span aria-hidden="true">01</span> Practice realistic workplace scenarios</div>
+          <div><span aria-hidden="true">02</span> Get focused, actionable feedback</div>
+          <div><span aria-hidden="true">03</span> Track your progress over time</div>
+        </div>
+      </div>
+      <p class="clerk-auth-footnote">A little practice can change the whole conversation.</p>
+    </section>
+
+    <section class="clerk-auth-panel" aria-label="Sign in">
+      <div class="clerk-auth-card">
+        <div class="clerk-auth-heading">
+          <span class="eyebrow">Welcome back</span>
+          <h2>Sign in to continue</h2>
+          <p>Your next step starts here.</p>
+        </div>
+        <div id="clerk-auth-widget"></div>
+        <p id="auth-status" class="clerk-auth-status" role="status" aria-live="polite">Loading sign-in options...</p>
+      </div>
+      <p class="clerk-auth-security-note"><span aria-hidden="true">✓</span> Secure sign-in powered by Clerk</p>
+    </section>
+  </main>
+
+  <script src="clerk-auth.js"></script>
+  <script>window.mountClerkAuthPage();</script>
 </body>
 </html>

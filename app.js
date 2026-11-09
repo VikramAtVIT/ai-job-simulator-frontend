@@ -1,4 +1,5 @@
 let currentUser = null;
+let clerkInstance = null;
 let currentScenario = null;
 let recommendationPending = false;
 let pendingScenario = null;
@@ -85,23 +86,6 @@ function applyPreferences() {
   const hardScenariosToggle = document.getElementById('hardScenariosToggle');
   if (lightModeToggle) lightModeToggle.checked = preferences.theme === 'light';
   if (hardScenariosToggle) hardScenariosToggle.checked = preferences.hardScenarios;
-}
-
-function consumeGoogleRedirect() {
-  const params = new URLSearchParams(window.location.search);
-  const authToken = params.get('authToken');
-  const userId = params.get('userId');
-  const user = params.get('user');
-  if (!authToken || !userId || !user) return;
-  try {
-    localStorage.setItem('authToken', authToken);
-    localStorage.setItem('userId', userId);
-    localStorage.setItem('currentUser', user);
-    localStorage.removeItem('userStats');
-    window.history.replaceState({}, document.title, window.location.pathname);
-  } catch (error) {
-    console.error('Unable to complete Google sign-in:', error);
-  }
 }
 
 const scenarioCatalog = [
@@ -325,18 +309,50 @@ function renderLevels(stats) {
 
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme(getPreferences().theme);
-  consumeGoogleRedirect();
-  checkAuth();
-  window.socket = io(window.APP_CONFIG.backendUrl, {
-    auth: {
-      userId: localStorage.getItem('userId') || ''
-    }
-  });
-  setupSocketListeners();
-  if (localStorage.getItem('authToken')) {
-    router.navigate('dashboard');
-  }
+  initializeAuthenticatedApp();
 });
+
+async function initializeAuthenticatedApp() {
+  try {
+    clerkInstance = await window.clerkReady;
+    if (!clerkInstance || !clerkInstance.isSignedIn) {
+      window.location.replace('./login.html');
+      return;
+    }
+
+    const token = await clerkInstance.session.getToken();
+    const response = await fetch(`${window.APP_CONFIG.backendUrl}/api/auth/session`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const session = await response.json();
+    if (!response.ok) throw new Error(session.error || 'Unable to verify your sign-in.');
+
+    currentUser = session.user;
+    localStorage.removeItem('userStats');
+    if (session.stats) localStorage.setItem('userStats', JSON.stringify(session.stats));
+
+    window.socket = io(window.APP_CONFIG.backendUrl, {
+      autoConnect: false,
+      auth: callback => {
+        clerkInstance.session.getToken()
+          .then(sessionToken => callback({ token: sessionToken }))
+          .catch(error => {
+            console.error('Unable to refresh your sign-in for the simulator connection:', error);
+            callback({ token: '' });
+          });
+      }
+    });
+    setupSocketListeners();
+    window.socket.connect();
+    router.navigate('dashboard');
+  } catch (error) {
+    console.error('Clerk app initialization failed:', error);
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.textContent = `Unable to verify your sign-in: ${error.message}`;
+    }
+  }
+}
 
 function setupSocketListeners() {
   if (!window.socket) return;
@@ -628,28 +644,15 @@ function displayFeedback(feedback) {
   }
 }
 
-function checkAuth() {
-  const token = localStorage.getItem('authToken');
-  if (!token && !window.location.href.includes('login')) {
-    window.location.href = './login.html';
-  }
-  if (token) {
-    try {
-      currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    } catch (error) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('currentUser');
-      window.location.href = './login.html';
-    }
-  }
-}
-
 function logout() {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('userId');
-  localStorage.removeItem('currentUser');
-  localStorage.removeItem('userStats');
-  window.location.href = './index.html';
+  if (!clerkInstance) {
+    window.location.replace('./login.html');
+    return;
+  }
+
+  clerkInstance.signOut()
+    .then(() => window.location.replace('./login.html'))
+    .catch(error => console.error('Clerk sign-out failed:', error));
 }
 
 function handleLogout() {
